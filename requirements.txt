@@ -1,0 +1,2 @@
+pip==24.1.2
+databricks-cli==0.18.0
