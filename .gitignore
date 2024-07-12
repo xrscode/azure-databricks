@@ -1,0 +1,15 @@
+venv/
+
+# Terraform files in infrastructure folder:
+terraform/.terraform.*
+terraform/.terraform
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+
+# Terraform files in databricks folder:
+databricks/.terraform.*
+databricks/.terraform
+databricks/terraform.tfstate
+databricks/terraform.tfstate.backup
+databricks/terraform.tfvars
