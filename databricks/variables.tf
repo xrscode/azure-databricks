@@ -10,6 +10,11 @@ variable "databricks_host" {
 }
 
 variable "databricks_user" {
-    description = "The user for the databricks workspace"
+    description = "The user for the databricks workspace."
+    type = string
+}
+
+variable "key_vault" {
+    description = "The name of the key vault."
     type = string
 }

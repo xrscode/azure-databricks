@@ -52,6 +52,21 @@ resource "azurerm_storage_blob" "upload-circuits"{
 # Store name of demo storage account in key vault:
 resource "azurerm_key_vault_secret" "storage_account_name_demo" {
   name         = "DemoAccountName"
-  value        = azurerm_storage_account.demo.name
+  value        = azurerm_storage_container.demo.name
+  key_vault_id = azurerm_key_vault.f1keyvault.id
+  depends_on = [ azurerm_storage_container.demo ]
+}
+
+# Store name of storage account as secret:
+resource "azurerm_key_vault_secret" "storage_account_name_secret" {
+  name         = "storage-account"
+  value        = azurerm_storage_account.storage_account_one.name
+  key_vault_id = azurerm_key_vault.f1keyvault.id
+}
+
+# Store the primary access key in Key Vault
+resource "azurerm_key_vault_secret" "storage_account_primary_key" {
+  name         = "storage-account-primary-key"
+  value        = azurerm_storage_account.storage_account_one.primary_access_key
   key_vault_id = azurerm_key_vault.f1keyvault.id
 }
