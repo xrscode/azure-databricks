@@ -66,5 +66,29 @@ resource "azurerm_key_vault" "f1keyvault" {
       "Purge"
     ]
   }
+
+  # Access policy for Databricks:
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = azurerm_databricks_workspace.workspace.principal_id 
+
+    key_permissions = [
+      "Get",
+      "List"
+    ]
+
+    secret_permissions = [
+      "Get",
+      "List"
+    ]
+
+    storage_permissions = [
+      "Get",
+      "List"
+    ]
+  }
 }
 
+
+ 
+  
