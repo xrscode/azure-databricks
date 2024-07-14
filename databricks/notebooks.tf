@@ -12,6 +12,10 @@ terraform {
   }
 }
 
+provider "azurerm"{
+  features {}
+}
+
 # Formula1 Root directory:
 resource "databricks_directory" "formula1" {
     path = "/Users/${var.databricks_user}/Formula1"

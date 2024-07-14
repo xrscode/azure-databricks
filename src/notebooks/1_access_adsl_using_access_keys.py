@@ -6,6 +6,7 @@
 spark.conf.set("fs.azure.account.key.f1dl9072024.dfs.core.windows.net",
                "secretkeyHERE")
 
+# "DemoAccountName - keyvault Secret = 'demo'"
 dbutils.fs.ls("abfss://demo@f1dl9072024.dfs.core.windows.net")
 
 display(spark.read.csv(

@@ -17,13 +17,11 @@ terraform {
   }
 }
 
-
 # Define the resource group:
 resource "azurerm_resource_group" "azure_databricks" {
   name     = "databrickscourse-rg"
   location = "UK South"
 }
-
 
 # Dynamically gain tenant_id key:
 data "azurerm_client_config" "current" {}
@@ -47,19 +45,50 @@ resource "azurerm_key_vault" "f1keyvault" {
     key_permissions = [
       "Get",
       "Delete",
-      "Purge"
+      "Purge",
+      "Create"
     ]
 
     secret_permissions = [
       "Get",
       "Delete",
-      "Purge"
+      "Purge",
+      "Set"
     ]
 
     storage_permissions = [
       "Get",
       "Delete",
+      "Purge",
+      "List",
+      "Set",
+      "Update",
       "Purge"
     ]
   }
+
+  # Access policy for Databricks:
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = azurerm_databricks_workspace.workspace.principal_id 
+
+    key_permissions = [
+      "Get",
+      "List"
+    ]
+
+    secret_permissions = [
+      "Get",
+      "List"
+    ]
+
+    storage_permissions = [
+      "Get",
+      "List"
+    ]
+  }
 }
+
+
+ 
+  

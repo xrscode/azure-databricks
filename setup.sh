@@ -2,7 +2,7 @@
 cd terraform && terraform init && terraform plan && terraform apply -auto-approve
 
 # Run Python file to ask for host and token:
-cd ../ && python src/get_host_token.py
+cd ../ && python src/update_tfars.py
 
 # Setup databricks:
 cd databricks && terraform init && terraform plan && terraform apply -auto-approve
