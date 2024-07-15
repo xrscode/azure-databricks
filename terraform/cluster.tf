@@ -6,6 +6,7 @@ data "databricks_node_type" "smallest" {
 # 2. Use latest databricks runtime:
 data "databricks_spark_version" "latest_lts" {
     long_term_support = true
+    depends_on = [ azurerm_databricks_workspace.workspace ]
 }
 # 3. Create cluster
 resource "databricks_cluster" "my_cluster" {
