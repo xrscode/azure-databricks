@@ -6,15 +6,20 @@ resource "azurerm_databricks_workspace" "workspace" {
     sku = "standard"
 }
 
-
-# Store the Databricks host URL as a secret in Key Vault
-resource "azurerm_key_vault_secret" "databricks_host_url" {
-  name         = "databricks-url"
-  value        = azurerm_databricks_workspace.workspace.workspace_url
-  key_vault_id = azurerm_key_vault.f1keyvault.id
-}
-
 # Output the Databricks workspace URL
 output "databricks_workspace_url" {
   value = azurerm_databricks_workspace.workspace.workspace_url
+}
+
+# Create a Databricks personal access token, ensuring it depends on the workspace creation:
+resource "databricks_token" "pat" {
+  comment         = "Terraform Provisioning"
+  lifetime_seconds = 8640000  # 100-day token
+  depends_on       = [azurerm_databricks_workspace.workspace]
+}
+
+# Output the Databricks personal access token:
+output "databricks_access_token" {
+  value      = databricks_token.pat.token_value
+  sensitive  = true
 }
