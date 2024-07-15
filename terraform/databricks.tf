@@ -11,6 +11,16 @@ output "databricks_workspace_url" {
   value = azurerm_databricks_workspace.workspace.workspace_url
 }
 
+# Output hte Databricks ID:
+output "databricks_workspace_id" {
+  value = azurerm_databricks_workspace.workspace.id
+}
+
+# Output the config object_id
+output "azure_current_object_id"{
+  value = data.azurerm_client_config.current.subscription_id
+}
+
 # Create a Databricks personal access token, ensuring it depends on the workspace creation:
 resource "databricks_token" "pat" {
   comment         = "Terraform Provisioning"
@@ -22,4 +32,24 @@ resource "databricks_token" "pat" {
 output "databricks_access_token" {
   value      = databricks_token.pat.token_value
   sensitive  = true
+}
+
+# Create Secret Scope
+# Will allow data bricks to connect to secret vault:
+resource "databricks_secret_scope" "dbs_secret" {
+  name = "f1-scope"
+  initial_manage_principal = "users"
+  keyvault_metadata {
+    resource_id = azurerm_key_vault.f1keyvault.id
+    dns_name    = azurerm_key_vault.f1keyvault.vault_uri
+  }
+  depends_on = [ databricks_notebook.access_adls_access_keys ]
+}
+
+output "resource_id" {
+  value = azurerm_key_vault.f1keyvault.id
+}
+
+output "dns_name" {
+  value = azurerm_key_vault.f1keyvault.vault_uri
 }

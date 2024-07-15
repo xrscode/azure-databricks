@@ -49,24 +49,33 @@ resource "azurerm_storage_blob" "upload-circuits"{
     source = "../files/circuits.csv"
 }
 
-# Store name of demo storage account in key vault:
-resource "azurerm_key_vault_secret" "storage_account_name_demo" {
-  name         = "DemoAccountName"
-  value        = azurerm_storage_container.demo.name
-  key_vault_id = azurerm_key_vault.f1keyvault.id
-  depends_on = [ azurerm_storage_container.demo ]
+# Generate SAS tokens:
+data "azurerm_storage_account_blob_container_sas" "sas_demo" {
+  connection_string = azurerm_storage_account.storage_account_one.primary_connection_string
+  container_name    = azurerm_storage_container.demo.name
+  https_only        = true
+
+
+  start  = "2018-03-21"
+  expiry = "2026-03-21"
+
+  permissions {
+    read   = true
+    add    = false
+    create = false
+    write  = false
+    delete = false
+    list   = true
+  }
+
+  cache_control       = "max-age=5"
+  content_disposition = "inline"
+  content_encoding    = "deflate"
+  content_language    = "en-US"
+  content_type        = "application/json"
 }
 
-# Store name of storage account as secret:
-resource "azurerm_key_vault_secret" "storage_account_name_secret" {
-  name         = "storage-account"
-  value        = azurerm_storage_account.storage_account_one.name
-  key_vault_id = azurerm_key_vault.f1keyvault.id
-}
-
-# Store the primary access key in Key Vault
-resource "azurerm_key_vault_secret" "storage_account_primary_key" {
-  name         = "storage-account-primary-key"
-  value        = azurerm_storage_account.storage_account_one.primary_access_key
-  key_vault_id = azurerm_key_vault.f1keyvault.id
+output "sas_url_query_string" {
+  value = data.azurerm_storage_account_blob_container_sas.sas_demo.sas
+  sensitive = true
 }

@@ -9,14 +9,23 @@ resource "databricks_directory" "setup" {
     depends_on = [databricks_directory.formula1]
 }
 
-# ADLS ACCESS KEYS NOTEBOOK
+# Upload notebook; 'access data lake via access keys'.
 resource "databricks_notebook" "access_adls_access_keys" {
-  content_base64 = base64encode(data.template_file.adls_notebook.rendered)
+  content_base64 = filebase64("../src/notebooks/1.access_adls_using_access_keys.py")
   path           = "${databricks_directory.setup.path}/1.access_adls_using_access_keys"
-  language       = "PYTHON"
+  language       = "PYTHON"  # Set the appropriate language
 }
 
-# Upload ADLS notebook:
-data "template_file" "adls_notebook" {
-    template = file("../src/notebooks/1_access_adsl_using_access_keys.py")
+# Upload notebook; 'access data lake via sas token'.
+resource "databricks_notebook" "access_adls_sas_token" {
+  content_base64 = filebase64("../src/notebooks/2.access_adls_using_sas_token.py")
+  path           = "${databricks_directory.setup.path}/1.access_adls_using_access_keys"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'access data lake using service principal'.
+resource "databricks_notebook" "access_adls_service_principal" {
+  content_base64 = filebase64("../src/notebooks/3.access_adls_using_service_principal.py")
+  path           = "${databricks_directory.setup.path}/1.access_adls_using_access_keys"
+  language       = "PYTHON"  # Set the appropriate language
 }
