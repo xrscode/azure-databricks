@@ -68,3 +68,12 @@
 #   value        = azurerm_databricks_workspace.workspace.workspace_url
 #   key_vault_id = azurerm_key_vault.f1keyvault.id
 # }
+
+# Store the Databricks PAT as a secret key in Key Vault:
+# resource "azurerm_key_vault_secret" "databricks_pat" {
+#   name         = "databricks-pat"
+#   value        = databricks_token.pat.token_value
+#   key_vault_id = azurerm_key_vault.f1keyvault.id
+#   depends_on   = [databricks_token.pat]
+# }
+
