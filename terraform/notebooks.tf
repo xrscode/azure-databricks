@@ -43,3 +43,17 @@ resource "databricks_notebook" "explore_dbutils_secrets_utility" {
   path           = "${databricks_directory.setup.path}/5.explore_dbutils_secrets_utility.py"
   language       = "PYTHON"  # Set the appropriate language
 }
+
+# Upload notebook; 'explore dbfs root'
+resource "databricks_notebook" "explore_dbfs_root" {
+  content_base64 = filebase64("../src/notebooks/6.explore_dbfs_root.py")
+  path           = "${databricks_directory.setup.path}/6.explore_dbfs_root.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'mount adls using service principle'
+resource "databricks_notebook" "mount_adls_service_principle" {
+  content_base64 = filebase64("../src/notebooks/7.mount_adls_using_service_principle.py")
+  path           = "${databricks_directory.setup.path}/7.mount_adls_using_service_principle.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
