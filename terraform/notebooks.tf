@@ -57,3 +57,10 @@ resource "databricks_notebook" "mount_adls_service_principle" {
   path           = "${databricks_directory.setup.path}/7.mount_adls_using_service_principle.py"
   language       = "PYTHON"  # Set the appropriate language
 }
+
+# Upload notebook; 'mount_adls_for_project'
+resource "databricks_notebook" "mount_adls_for_project" {
+  content_base64 = filebase64("../src/notebooks/8.mount_adls_containers_for_project.py")
+  path           = "${databricks_directory.setup.path}/8.mount_adls_containers_for_project.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
