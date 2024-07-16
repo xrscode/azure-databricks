@@ -29,3 +29,17 @@ resource "databricks_notebook" "access_adls_service_principal" {
   path           = "${databricks_directory.setup.path}/3.access_adls_using_service_principal.py"
   language       = "PYTHON"  # Set the appropriate language
 }
+
+# Upload notebook; 'access data lake using cluster scoped credentials'
+resource "databricks_notebook" "access_adls_cluster_scoped" {
+  content_base64 = filebase64("../src/notebooks/4.access_adls_using_cluster_scoped_credentials.py")
+  path           = "${databricks_directory.setup.path}/4.access_adls_using_cluster_scoped_credentials.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'explore dbutils secrets utility'
+resource "databricks_notebook" "explore_dbutils_secrets_utility" {
+  content_base64 = filebase64("../src/notebooks/5.explore_dbutils_secrets_utility.py")
+  path           = "${databricks_directory.setup.path}/5.explore_dbutils_secrets_utility.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
