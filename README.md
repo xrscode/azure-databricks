@@ -15,7 +15,9 @@ run m1
 # BUG with Secret Scope:
 After infrastructure has been uploaded into the cloud, there is a possible bug with Databricks secret scope.  Secrets can not be accessed in key vault.  To fix the issue;
 1. In 'databricks.tf' line 40.  Rename 'f1-scope' to 'f1-scopex'
-2. terraform apply -auto-approve
-3. Rename 'databricks.tf' line 40 back to 'f1-scope'
-4. terraform apply -auto-approve
+2. Comment out lines 32-48 in cluster.tf
+3. terraform apply -auto-approve
+4. Rename 'databricks.tf' line 40 back to 'f1-scope'
+5. terraform apply -auto-approve
+6. In Databricks compute > re-enable scoped-cluster.  Keep cluster commented out in Terraform. 
 
