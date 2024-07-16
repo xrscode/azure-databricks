@@ -79,3 +79,7 @@ output "sas_url_query_string" {
   value = data.azurerm_storage_account_blob_container_sas.sas_demo.sas
   sensitive = true
 }
+
+# Upload RAW Data to Data Lake
+# Files to upload: 'circuits, races, constructors, drivers, results, pitstops, laptimes, qualifying.'
+
