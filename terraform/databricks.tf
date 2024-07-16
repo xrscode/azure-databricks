@@ -11,7 +11,7 @@ output "databricks_workspace_url" {
   value = azurerm_databricks_workspace.workspace.workspace_url
 }
 
-# Output hte Databricks ID:
+# Output the Databricks ID:
 output "databricks_workspace_id" {
   value = azurerm_databricks_workspace.workspace.id
 }
@@ -46,10 +46,13 @@ resource "databricks_secret_scope" "dbs_secret" {
   depends_on = [ databricks_notebook.access_adls_access_keys ]
 }
 
+# Outputs the resource ID:
 output "resource_id" {
   value = azurerm_key_vault.f1keyvault.id
 }
 
+# Outputs the DNS name:
 output "dns_name" {
   value = azurerm_key_vault.f1keyvault.vault_uri
 }
+

@@ -19,13 +19,13 @@ resource "databricks_notebook" "access_adls_access_keys" {
 # Upload notebook; 'access data lake via sas token'.
 resource "databricks_notebook" "access_adls_sas_token" {
   content_base64 = filebase64("../src/notebooks/2.access_adls_using_sas_token.py")
-  path           = "${databricks_directory.setup.path}/1.access_adls_using_access_keys"
+  path           = "${databricks_directory.setup.path}/2.access_adls_using_sas_token.py"
   language       = "PYTHON"  # Set the appropriate language
 }
 
 # Upload notebook; 'access data lake using service principal'.
 resource "databricks_notebook" "access_adls_service_principal" {
   content_base64 = filebase64("../src/notebooks/3.access_adls_using_service_principal.py")
-  path           = "${databricks_directory.setup.path}/1.access_adls_using_access_keys"
+  path           = "${databricks_directory.setup.path}/3.access_adls_using_service_principal.py"
   language       = "PYTHON"  # Set the appropriate language
 }

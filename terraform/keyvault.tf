@@ -82,3 +82,23 @@ resource "azurerm_key_vault_secret" "sas_token_demo" {
     value = data.azurerm_storage_account_blob_container_sas.sas_demo.sas
     key_vault_id = azurerm_key_vault.f1keyvault.id
 }
+
+# Store App User Information:
+resource "azurerm_key_vault_secret" "app_client_id" {
+  name         = "application-client-id-demo"
+  value        = azuread_application.setup.client_id
+  key_vault_id = azurerm_key_vault.f1keyvault.id
+  depends_on = [ azuread_application.setup ]
+}
+resource "azurerm_key_vault_secret" "tenant_id" {
+  name         = "directory-tenant-id-demo"
+  value        = data.azurerm_client_config.current.tenant_id
+  key_vault_id = azurerm_key_vault.f1keyvault.id
+  depends_on = [ azuread_application.setup ]
+}
+resource "azurerm_key_vault_secret" "client_secret" {
+  name         = "application-client-secret"
+  value        = azuread_application_password.setup.value
+  key_vault_id = azurerm_key_vault.f1keyvault.id
+  depends_on = [ azuread_application.setup ]
+}

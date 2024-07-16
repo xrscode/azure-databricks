@@ -16,6 +16,8 @@ install:
 	@echo "Allowing scripts to run"
 	chmod +x setup.sh
 	chmod +x remove.sh
+	@echo "Installing/updating Azure CLI"
+	brew update && brew install azure-cli
 
 setup:
 	./setup.sh
