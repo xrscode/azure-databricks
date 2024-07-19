@@ -21,7 +21,7 @@ client_secret = dbutils.secrets.get(
 storage_account = "f1dl9072024"
 container_name = 'raw'
 scope_name = 'f1-scope'
-csv_location = "dbfs:/mnt/f1dl9072024/raw/races.csv"
+json_location = "dbfs:/mnt/f1dl9072024/raw/drivers.json"
 
 # COMMAND ----------
 
@@ -77,45 +77,71 @@ mount_adls(storage_account, container_name)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Read the JSON file using the spark dataframe reader**
+# MAGIC **READ the JSON file using the spark dataframe reader API**
 
 # COMMAND ----------
 
-constructors_schema = "constructorId INTEGER, constructorRef STRING, name STRING, nationality STRING, url STRING"
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DateType
+name_schema = StructType(fields=[
+    StructField("forename", StringType(), True),
+    StructField("surname", StringType(), True)
+])
+drivers_schema = StructType(fields=[
+    StructField("driverId", IntegerType(), False),
+    StructField("driverRef", StringType(), True),
+    StructField("number", IntegerType(), True),
+    StructField("code", StringType(), True),
+    StructField("name", name_schema),
+    StructField("dob", DateType(), True),
+    StructField("nationality", StringType(), True),
+    StructField("url", StringType(), True)
+])
 
 # COMMAND ----------
 
-constructor_df = spark.read \
-.schema(constructors_schema) \
-.json(f"/mnt/{storage_account}/raw/constructors.json")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Drop Unwanted Columns**
-
-# COMMAND ----------
-
-constructor_dropped_df = constructor_df.drop('url')
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Rename column and add ingestion_date**
-
-# COMMAND ----------
-
-from pyspark.sql.functions import current_timestamp
-
-constructor_final_df = constructor_dropped_df.withColumnRenamed("constructorId", "constructor_id") \
-.withColumnRenamed("constructorRef", "constructor_ref") \
-.withColumn("ingestion_date", current_timestamp())
+drivers_df = spark.read \
+    .schema(drivers_schema) \
+    .json(f"{json_location}")
+display(drivers_df)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Write output to Parquet**
+# MAGIC **Rename Columns & Add New Columns**
+# MAGIC 1. driverId renamed to driver_id
+# MAGIC 2. driverRef renamed to driver_ref
+# MAGIC 3. ingestion date added
+# MAGIC 4. name added with concatenation of forename and surname
 
 # COMMAND ----------
 
-constructor_final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/constructors")
+from pyspark.sql.functions import col, concat, current_timestamp, lit
+
+drivers_with_columns_df = drivers_df.withColumnRenamed("driverId", "driver_id") \
+.withColumnRenamed("driverRef", "driver_ref") \
+.withColumn("ingestion_date", current_timestamp()) \
+.withColumn("name", concat(col("name.forename"), lit(" "), col("name.surname")))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Drop the Unwanted Columns**
+# MAGIC 1. url
+
+# COMMAND ----------
+
+drivers_final_df = drivers_with_columns_df.drop(col("url"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Write Parquet to processed container**
+
+# COMMAND ----------
+
+drivers_final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/drivers")
+
+
+# COMMAND ----------
+
+display(spark.read.parquet(f"/mnt/{storage_account}/processed/drivers"))
