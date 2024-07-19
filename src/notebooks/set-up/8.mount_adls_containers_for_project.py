@@ -71,4 +71,14 @@ mount_adls(storage_account, 'presentation')
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC **Get Path of **Notebook****
+
+# COMMAND ----------
+
+notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
+display(notebook_path)
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC

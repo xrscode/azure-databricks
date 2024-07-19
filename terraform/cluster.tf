@@ -14,7 +14,7 @@ resource "databricks_cluster" "my_cluster" {
     cluster_name = "f1-cluster"
     node_type_id = data.databricks_node_type.smallest.id
     spark_version = data.databricks_spark_version.latest_lts.id
-    autotermination_minutes = 10
+    autotermination_minutes = 60
     # CONFIGURATION FOR SINGLE NODE CLUSTER!!!!
     num_workers = 0
     spark_conf = {
