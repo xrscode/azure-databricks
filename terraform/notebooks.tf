@@ -85,3 +85,10 @@ resource "databricks_notebook" "ingest_races" {
   path           = "${databricks_directory.formula1_ingestion.path}/2.ingest_races_file.py"
   language       = "PYTHON"  # Set the appropriate language
 }
+
+# Upload notebook; 'ingest_constructors_file'
+resource "databricks_notebook" "ingest_constructors" {
+  content_base64 = filebase64("../src/notebooks/ingestion/3.ingest_constructors.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/3.ingest_constructors.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
