@@ -74,28 +74,42 @@ resource "databricks_notebook" "mount_adls_for_project" {
 # INGESTION NOTEBOOKS:
 # Upload notebook; 'ingest_circuits_file'
 resource "databricks_notebook" "ingest_circuits" {
-  content_base64 = filebase64("../src/notebooks/ingestion/1.ingest_circuits_file.py")
-  path           = "${databricks_directory.formula1_ingestion.path}/1.ingest_circuits_file.py"
+  content_base64 = filebase64("../src/notebooks/ingestion/1.ingest_circuits_csv.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/1.ingest_circuits_csv.py"
   language       = "PYTHON"  # Set the appropriate language
 }
 
 # Upload notebook; 'ingest_races_file'
 resource "databricks_notebook" "ingest_races" {
-  content_base64 = filebase64("../src/notebooks/ingestion/2.ingest_races_file.py")
-  path           = "${databricks_directory.formula1_ingestion.path}/2.ingest_races_file.py"
+  content_base64 = filebase64("../src/notebooks/ingestion/2.ingest_races_csv.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/2.ingest_races_csv.py"
   language       = "PYTHON"  # Set the appropriate language
 }
 
 # Upload notebook; 'ingest_constructors_file'
 resource "databricks_notebook" "ingest_constructors" {
-  content_base64 = filebase64("../src/notebooks/ingestion/3.ingest_constructors.py")
-  path           = "${databricks_directory.formula1_ingestion.path}/3.ingest_constructors.py"
+  content_base64 = filebase64("../src/notebooks/ingestion/3.ingest_constructors_csv.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/3.ingest_constructors_csv.py"
   language       = "PYTHON"  # Set the appropriate language
 }
 
 # Upload notebook; 'ingest_drivers_file'
 resource "databricks_notebook" "ingest_drivers" {
-  content_base64 = filebase64("../src/notebooks/ingestion/4.ingest_drivers.py")
-  path           = "${databricks_directory.formula1_ingestion.path}/4.ingest_drivers.py"
+  content_base64 = filebase64("../src/notebooks/ingestion/4.ingest_drivers_json.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/4.ingest_drivers_json.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'ingest_results_json'
+resource "databricks_notebook" "ingest_results_json" {
+  content_base64 = filebase64("../src/notebooks/ingestion/5.ingest_results_json.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/5.ingest_results_json.py"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'ingest_pitstops_json
+resource "databricks_notebook" "ingest_pitstops_json" {
+  content_base64 = filebase64("../src/notebooks/ingestion/6.ingest_pitstops_json.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/6.ingest_pitstops_json.py"
   language       = "PYTHON"  # Set the appropriate language
 }
