@@ -10,15 +10,6 @@
    },
    {
       "raceId":841,
-      "driverId":30,
-      "stop":1,
-      "lap":1,
-      "time":"17:05:52",
-      "duration":25.021,
-      "milliseconds":25021
-   },
-   {
-      "raceId":841,
       "driverId":17,
       "stop":1,
       "lap":11,
