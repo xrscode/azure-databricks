@@ -4,6 +4,8 @@ resource "azurerm_databricks_workspace" "workspace" {
     resource_group_name = azurerm_resource_group.azure_databricks.name
     location = azurerm_resource_group.azure_databricks.location
     sku = "standard"
+    # !!!!!!!!!!!
+    depends_on = [azurerm_key_vault.f1keyvault]
 }
 
 # Output the Databricks workspace URL
@@ -43,7 +45,7 @@ resource "databricks_secret_scope" "dbs_secret" {
     resource_id = azurerm_key_vault.f1keyvault.id
     dns_name    = azurerm_key_vault.f1keyvault.vault_uri
   }
-  depends_on = [ databricks_notebook.access_adls_access_keys ]
+  depends_on = [ azurerm_key_vault_access_policy.one, azurerm_key_vault_access_policy.two, azurerm_key_vault.f1keyvault, azurerm_databricks_workspace.workspace, azurerm_key_vault_secret.storage_account_primary_key]
 }
 
 # Outputs the resource ID:

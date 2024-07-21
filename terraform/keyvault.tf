@@ -8,7 +8,9 @@ resource "azurerm_key_vault" "f1keyvault" {
   soft_delete_retention_days  = 7
   purge_protection_enabled    = false
 
-  sku_name = "standard" 
+  sku_name = "standard"
+  depends_on = [azurerm_storage_account.storage_account_one]
+
 }
 
 resource "azurerm_key_vault_access_policy" "one" {

@@ -8,6 +8,7 @@ resource "azurerm_storage_account" "storage_account_one" {
     account_replication_type = "LRS"
     # Enable hierarchical namespace:
     is_hns_enabled = true
+    # depends_on = [azurerm_key_vault.f1keyvault]
 }
 
 # Create containers:
