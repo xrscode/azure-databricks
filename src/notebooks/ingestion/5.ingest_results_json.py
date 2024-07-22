@@ -1,6 +1,24 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest constructors.json**
+# MAGIC **Ingest results.json**
+
+# COMMAND ----------
+
+dbutils.widgets.help()
+
+# COMMAND ----------
+
+# Create Widget
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
 
 # COMMAND ----------
 
@@ -165,7 +183,7 @@ df_rename = df_drop.select(
 # COMMAND ----------
 
 from pyspark.sql.functions import current_timestamp, to_timestamp, concat, col, lit 
-df_with_column = df_rename.withColumn("ingestion_date", current_timestamp())
+df_with_column = df_rename.withColumn("ingestion_date", current_timestamp()).withColum("data_source", lit(v_data_source))
 
 # COMMAND ----------
 

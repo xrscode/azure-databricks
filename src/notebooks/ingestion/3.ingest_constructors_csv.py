@@ -1,14 +1,34 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest constructors.json**
+# MAGIC **Ingest constructors.csv**
 
 # COMMAND ----------
+
+dbutils.widgets.help()
+
+# COMMAND ----------
+
+# Create Widget
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 
 # MAGIC %md
 # MAGIC **1. Establish credentials to allow mount to Blob Storage:**
 # MAGIC
 
 # COMMAND ----------
+# MAGIC %run "../includes/common_functions"
 
 # Access variables stored in key vault:
 # Access application-client-id token secret:
@@ -105,11 +125,12 @@ constructor_dropped_df = constructor_df.drop('url')
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
+from pyspark.sql.functions import current_timestamp, lit
 
 constructor_final_df = constructor_dropped_df.withColumnRenamed("constructorId", "constructor_id") \
 .withColumnRenamed("constructorRef", "constructor_ref") \
-.withColumn("ingestion_date", current_timestamp())
+.withColumn("ingestion_date", current_timestamp()) \
+.withColumn("data_source", lit(v_data_source))
 
 # COMMAND ----------
 

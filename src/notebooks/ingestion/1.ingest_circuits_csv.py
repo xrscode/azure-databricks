@@ -4,6 +4,31 @@
 
 # COMMAND ----------
 
+dbutils.widgets.help()
+
+# COMMAND ----------
+
+# Create Widget
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
+# raw_folder_path
+# add_ingestion_date
+hello()
+display(raw_folder_path)
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC **1. Establish credentials to allow mount to Blob Storage:**
 # MAGIC
@@ -44,32 +69,6 @@ configs = {"fs.azure.account.auth.type": "OAuth",
 
 # COMMAND ----------
 
-def mount_adls(storage_account_name, container_name):
-    # Access secrets from Key Vault:
-    client_id = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-id-demo")
-    tenant_id = dbutils.secrets.get(
-    scope="f1-scope", key="directory-tenant-id-demo")
-    client_secret = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-secret")
-
-    # Set spark configurations:
-    configs = {"fs.azure.account.auth.type": "OAuth",
-               "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-               "fs.azure.account.oauth2.client.id": client_id,
-               "fs.azure.account.oauth2.client.secret": client_secret,
-               "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-    
-    # Check to see if mount exists.  Unmount if exists:
-    if any(mount.mountPoint == f"/mnt/{storage_account_name}/{container_name}" for mount in dbutils.fs.mounts()):
-        dbutils.fs.unmount(f"/mnt/{storage_account_name}/{container_name}")
-    
-    # Mount the storage account container:
-    dbutils.fs.mount(
-        source=f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/",
-        mount_point=f"/mnt/{storage_account_name}/{container_name}",
-        extra_configs=configs)
-
 mount_adls(storage_account, container_name)
 
 
@@ -100,7 +99,7 @@ display(dbutils.fs.mounts())
 
 # COMMAND ----------
 
-circuits_df_one = spark.read.csv("dbfs:/mnt/f1dl9072024/raw/circuits.csv", header='true')
+circuits_df_one = spark.read.csv(f"{raw_folder_path}/circuits.csv", header='true')
 
 # Displays the type of 'circuits_df'.  pyspark.sql.dataframe.DataFrame
 display(type(circuits_df_one))
@@ -227,22 +226,25 @@ display(circuits_selected_df)
 
 # COMMAND ----------
 
+
+from pyspark.sql.functions import lit
 circuits_renamed_df = circuits_selected_df.withColumnRenamed("circuitID", "circuit_id") \
 .withColumnRenamed("circuitRef", "circuit_ref") \
 .withColumnRenamed("lat", "latitude") \
 .withColumnRenamed("lng", "longitude") \
-.withColumnRenamed("alt", "altitude")
+.withColumnRenamed("alt", "altitude") \
+.withColumn("data_source", lit(v_data_source))
 circuits_renamed_df.show()
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **13. Add Data**
+# MAGIC **13. Add Ingestion Date Data**
 
 # COMMAND ----------
 
 from pyspark.sql.functions import current_timestamp
-circuits_final_df = circuits_renamed_df.withColumn("ingestion_date", current_timestamp())
+circuits_final_df = add_ingestion_date(circuits_renamed_df)
 display(circuits_final_df)
 
 # COMMAND ----------
@@ -253,7 +255,7 @@ display(circuits_final_df)
 # COMMAND ----------
 
 file_path = "/mnt/formula1dl/processed/circuits"
-circuits_final_df.write.mode("overwrite").parquet(file_path)
+circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
 
 # COMMAND ----------
 
