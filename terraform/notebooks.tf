@@ -71,6 +71,13 @@ resource "databricks_notebook" "mount_adls_for_project" {
 }
 
 # INGESTION NOTEBOOKS:
+resource "databricks_notebook" "ingest_all_files" {
+  content_base64 = filebase64("../src/notebooks/ingestion/0.ingest_all_files.py")
+  path           = "${databricks_directory.formula1_ingestion.path}/0.ingest_all_files"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+
 # Upload notebook; 'ingest_circuits_file'
 resource "databricks_notebook" "ingest_circuits" {
   content_base64 = filebase64("../src/notebooks/ingestion/1.ingest_circuits_csv.py")
