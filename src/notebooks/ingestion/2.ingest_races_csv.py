@@ -194,3 +194,13 @@ races_selected_df.write.mode("overwrite").partitionBy('race_year').parquet(file_
 # COMMAND ----------
 
 display(spark.read.parquet(file_path))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Exit Command**\
+# MAGIC If notebook succeeds output is; "Success"
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

@@ -8,9 +8,14 @@ resource "databricks_directory" "formula1_ingestion" {
     path = "${databricks_directory.formula1.path}/ingestion"
 }
 
-# DATABRICKS: set-up sub-directory:
+# DATABRICKS: "set-up" sub-directory:
 resource "databricks_directory" "setup" {
     path = "${databricks_directory.formula1.path}/set-up"
+}
+
+# DATABRICKS: demo sub-directory:
+resource "databricks_directory" "demo" {
+    path = "${databricks_directory.formula1.path}/demo"
 }
 
 # SETUP NOTEBOOKS
@@ -150,5 +155,26 @@ resource "databricks_notebook" "configuration" {
 resource "databricks_notebook" "common_functions" {
   content_base64 = filebase64("../src/notebooks/includes/common_functions.py")
   path           = "${databricks_directory.includes_path.path}/common_functions"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'filter_demo'
+resource "databricks_notebook" "filter_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/1.filter_demo.py")
+  path           = "${databricks_directory.demo.path}/1.filter_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'join_demo'
+resource "databricks_notebook" "join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/2.join_demo.py")
+  path           = "${databricks_directory.demo.path}/2.join_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'outer_join'
+resource "databricks_notebook" "outer_join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/3.join_outer_demo.py")
+  path           = "${databricks_directory.demo.path}/3.join_outer_demo"
   language       = "PYTHON"  # Set the appropriate language
 }

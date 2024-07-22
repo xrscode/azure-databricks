@@ -266,3 +266,13 @@ circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circ
 
 # # Read parquet to verify:
 # display(spark.read.parquet(file_path))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Exit Command**\
+# MAGIC If notebook succeeds output is; "Success"
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

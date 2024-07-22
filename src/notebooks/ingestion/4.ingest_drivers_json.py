@@ -164,3 +164,13 @@ drivers_final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/proces
 # COMMAND ----------
 
 display(spark.read.parquet(f"/mnt/{storage_account}/processed/drivers"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Exit Command**\
+# MAGIC If notebook succeeds output is; "Success"
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")
