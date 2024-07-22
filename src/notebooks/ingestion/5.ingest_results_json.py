@@ -3,11 +3,9 @@
 # MAGIC **Ingest results.json**
 
 # COMMAND ----------
-
 dbutils.widgets.help()
 
 # COMMAND ----------
-
 # Create Widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
@@ -27,7 +25,6 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # MAGIC
 
 # COMMAND ----------
-
 # Access variables stored in key vault:
 # Access application-client-id token secret:
 client_id = dbutils.secrets.get(
@@ -47,7 +44,6 @@ json_location = "dbfs:/mnt/f1dl9072024/raw/results.json"
 # MAGIC 2. **Configure Spark**
 
 # COMMAND ----------
-
 configs = {"fs.azure.account.auth.type": "OAuth",
            "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
            "fs.azure.account.oauth2.client.id": client_id,
@@ -61,8 +57,6 @@ configs = {"fs.azure.account.auth.type": "OAuth",
 # MAGIC Note you can call a function from another notebook:
 
 # COMMAND ----------
-
-
 def mount_adls(storage_account_name, container_name):
     # Access secrets from Key Vault:
     client_id = dbutils.secrets.get(
@@ -98,7 +92,6 @@ mount_adls(storage_account, container_name)
 # MAGIC **4. Define Schema**
 
 # COMMAND ----------
-
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType, TimestampType, DateType, FloatType
 
 races_schema = StructType(fields=[
@@ -128,7 +121,6 @@ races_schema = StructType(fields=[
 # MAGIC **5. READ the JSON file using the spark dataframe reader API**
 
 # COMMAND ----------
-
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DateType
 
 results_df = spark.read.json(f"/mnt/{storage_account}/raw/results.json", schema=races_schema)
@@ -142,7 +134,6 @@ display(results_df)
 # MAGIC **6. Drop Unwnated Column**
 
 # COMMAND ----------
-
 df_drop = results_df.drop("statusId")
 
 
@@ -152,7 +143,6 @@ df_drop = results_df.drop("statusId")
 # MAGIC **7. Rename Columns**
 
 # COMMAND ----------
-
 from pyspark.sql.functions import col
 df_rename = df_drop.select(
   col("resultId").alias("result_id"),
@@ -181,9 +171,8 @@ df_rename = df_drop.select(
 # MAGIC **8. Add Timestamp**
 
 # COMMAND ----------
-
 from pyspark.sql.functions import current_timestamp, to_timestamp, concat, col, lit 
-df_with_column = df_rename.withColumn("ingestion_date", current_timestamp()).withColum("data_source", lit(v_data_source))
+df_with_column = df_rename.withColumn("ingestion_date", current_timestamp()).withColumn("data_source", lit(v_data_source))
 
 # COMMAND ----------
 
@@ -191,7 +180,6 @@ df_with_column = df_rename.withColumn("ingestion_date", current_timestamp()).wit
 # MAGIC **9. Write Parquet to Processed**
 
 # COMMAND ----------
-
 df_with_column.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/results")
 
 # COMMAND ----------
@@ -200,5 +188,13 @@ df_with_column.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processe
 # MAGIC **10. Check Parquet Written**
 
 # COMMAND ----------
-
 display(spark.read.parquet(f"/mnt/{storage_account}/processed/results"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Exit Command**\
+# MAGIC If notebook succeeds output is; "Success"
+
+# COMMAND ----------
+dbutils.notebook.exit("Success")

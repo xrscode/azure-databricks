@@ -160,3 +160,13 @@ display(spark.read.parquet(f"/mnt/{storage_account}/processed/pit_stops"))
 
 # MAGIC %md
 # MAGIC
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Exit Command**\
+# MAGIC If notebook succeeds output is; "Success"
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

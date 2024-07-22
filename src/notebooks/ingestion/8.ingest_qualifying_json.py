@@ -154,3 +154,13 @@ final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/qual
 # COMMAND ----------
 
 display(spark.read.parquet(f"/mnt/{storage_account}/processed/qualifying"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Exit Command**\
+# MAGIC If notebook succeeds output is; "Success"
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

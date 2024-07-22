@@ -21,15 +21,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # MAGIC %run "../includes/common_functions"
 
 # COMMAND ----------
-
-
 # MAGIC %md
 # MAGIC **1. Establish credentials to allow mount to Blob Storage:**
 # MAGIC
 
 # COMMAND ----------
-# MAGIC %run "../includes/common_functions"
-
 # Access variables stored in key vault:
 # Access application-client-id token secret:
 client_id = dbutils.secrets.get(
@@ -44,12 +40,10 @@ scope_name = 'f1-scope'
 csv_location = "dbfs:/mnt/f1dl9072024/raw/races.csv"
 
 # COMMAND ----------
-
 # MAGIC %md
 # MAGIC 2. **Configure Spark**
 
 # COMMAND ----------
-
 configs = {"fs.azure.account.auth.type": "OAuth",
            "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
            "fs.azure.account.oauth2.client.id": client_id,
@@ -57,14 +51,11 @@ configs = {"fs.azure.account.auth.type": "OAuth",
            "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
 
 # COMMAND ----------
-
 # MAGIC %md
 # MAGIC 3. **Mount**
 # MAGIC Note you can call a function from another notebook:
 
 # COMMAND ----------
-
-
 def mount_adls(storage_account_name, container_name):
     # Access secrets from Key Vault:
     client_id = dbutils.secrets.get(
@@ -100,11 +91,9 @@ mount_adls(storage_account, container_name)
 # MAGIC **Read the JSON file using the spark dataframe reader**
 
 # COMMAND ----------
-
 constructors_schema = "constructorId INTEGER, constructorRef STRING, name STRING, nationality STRING, url STRING"
 
 # COMMAND ----------
-
 constructor_df = spark.read \
 .schema(constructors_schema) \
 .json(f"/mnt/{storage_account}/raw/constructors.json")
@@ -115,7 +104,6 @@ constructor_df = spark.read \
 # MAGIC **Drop Unwanted Columns**
 
 # COMMAND ----------
-
 constructor_dropped_df = constructor_df.drop('url')
 
 # COMMAND ----------
@@ -124,7 +112,6 @@ constructor_dropped_df = constructor_df.drop('url')
 # MAGIC **Rename column and add ingestion_date**
 
 # COMMAND ----------
-
 from pyspark.sql.functions import current_timestamp, lit
 
 constructor_final_df = constructor_dropped_df.withColumnRenamed("constructorId", "constructor_id") \
@@ -138,5 +125,13 @@ constructor_final_df = constructor_dropped_df.withColumnRenamed("constructorId",
 # MAGIC **Write output to Parquet**
 
 # COMMAND ----------
-
 constructor_final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/constructors")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Exit Command**\
+# MAGIC If notebook succeeds output is; "Success"
+
+# COMMAND ----------
+dbutils.notebook.exit("Success")
