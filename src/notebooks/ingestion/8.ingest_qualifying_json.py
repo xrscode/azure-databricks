@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest pitstops.json**
+# MAGIC **Ingest qualifying.json**
 
 # COMMAND ----------
 
@@ -19,6 +19,10 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC **Ingest Qualifying.json**
 
 # COMMAND ----------
 
@@ -95,68 +99,58 @@ mount_adls(storage_account, container_name)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **4. Define Schema**
+# MAGIC **5. Define Schema**
 
 # COMMAND ----------
 
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
- 
-pit_schema = StructType(fields=[ 
-StructField("raceId", IntegerType(), False),
-StructField("driverId", IntegerType(), True),
-StructField("stop", IntegerType(), True),
-StructField("time", StringType(), True),
-StructField("duration", StringType(), True),
-StructField("milliseconds", IntegerType(), True)
-]) 
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, TimestampType
 
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **5. Read multi-line JSON**
-
-# COMMAND ----------
-
-pit_stops_df = spark.read \
-.schema(pit_schema) \
-.option("multiLine", True) \
-.json(json_location)
-
+qualifying_schema = StructType(fields=[
+    StructField("qualifyId", IntegerType(), False),
+    StructField("raceId", IntegerType(), True),
+    StructField("driverId", IntegerType(), True),
+    StructField("constructorId", IntegerType(), True),
+    StructField("number", IntegerType(), True),
+    StructField("position", IntegerType(), True),
+    StructField("q1", StringType(), True),
+    StructField("q2", StringType(), True),
+    StructField("q3", StringType(), True),
+])
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **6. Rename & Add Ingestion Date**
+# MAGIC **6. Ingest Multiple JSON's**
+
+# COMMAND ----------
+
+qualifying_df = spark.read.schema(qualifying_schema).option('multiLine', True).json(f"/mnt/{storage_account}/{container_name}/qualifying")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **7. Rename Columns and Add**
 
 # COMMAND ----------
 
 from pyspark.sql.functions import current_timestamp, lit
 
-final_df = pit_stops_df \
-.withColumnRenamed("driverId", "driver_id") \
-.withColumnRenamed("raceId", "race_id") \
-.withColumn("ingestion_date", current_timestamp()) \
-.withColumn("data_source", lit(v_data_source))
+final_df = qualifying_df.withColumnRenamed("qualifyId", "qualifying_id").withColumnRenamed("raceId", "race_id").withColumnRenamed("driverId", "driver_id").withColumnRenamed("constructorId", "constructor_id").withColumn("ingestion_date", current_timestamp()).withColumn("data_source", lit(v_data_source))
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **7. Write Parquet**
+# MAGIC **8. Write to Parquet**
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/pit_stops")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **8. Check Parquet**
-
-# COMMAND ----------
-
-display(spark.read.parquet(f"/mnt/{storage_account}/processed/pit_stops"))
+final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/qualifying")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC
+# MAGIC **9. Check Parquet**
+
+# COMMAND ----------
+
+display(spark.read.parquet(f"/mnt/{storage_account}/processed/qualifying"))

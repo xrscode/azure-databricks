@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest pitstops.json**
+# MAGIC **Ingest lap_times.csv**
 
 # COMMAND ----------
 
@@ -21,7 +21,6 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # MAGIC %run "../includes/common_functions"
 
 # COMMAND ----------
-
 # MAGIC %md
 # MAGIC **1. Establish credentials to allow mount to Blob Storage:**
 # MAGIC
@@ -95,66 +94,65 @@ mount_adls(storage_account, container_name)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **4. Define Schema**
+# MAGIC **4. Configure Schema**
 
 # COMMAND ----------
 
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
- 
-pit_schema = StructType(fields=[ 
-StructField("raceId", IntegerType(), False),
-StructField("driverId", IntegerType(), True),
-StructField("stop", IntegerType(), True),
-StructField("time", StringType(), True),
-StructField("duration", StringType(), True),
-StructField("milliseconds", IntegerType(), True)
-]) 
+
+lap_times_schema = StructType(fields=[
+    StructField("raceId", IntegerType(), False),
+    StructField("driverId", IntegerType(), True),
+    StructField("lap", IntegerType(), True),
+    StructField("position", IntegerType(), True),
+    StructField("time", StringType(), True),
+    StructField("milliseconds", IntegerType(), True)
+])
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **5. Read multi-line JSON**
+# MAGIC **5. Create Data Frame**
 
 # COMMAND ----------
 
-pit_stops_df = spark.read \
-.schema(pit_schema) \
-.option("multiLine", True) \
-.json(json_location)
+lap_times_df = spark.read \
+.schema(lap_times_schema) \
+.csv(f"/mnt/{storage_account}/{container_name}/lap_times/lap_times_split_*.csv")
 
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **6. Rename & Add Ingestion Date**
+# MAGIC **6. Rename and Add Column**
 
 # COMMAND ----------
 
 from pyspark.sql.functions import current_timestamp, lit
 
-final_df = pit_stops_df \
-.withColumnRenamed("driverId", "driver_id") \
-.withColumnRenamed("raceId", "race_id") \
-.withColumn("ingestion_date", current_timestamp()) \
-.withColumn("data_source", lit(v_data_source))
+final_df = lap_times_df.withColumnRenamed("driverId", "driver_id") \
+  .withColumnRenamed("raceId", "race_id") \
+  .withColumn("ingestion_date", current_timestamp()) \
+  .withColumn("data_source", lit(v_data_source))
+
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **7. Write Parquet**
+# MAGIC **7. Write to Parquet**
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/pit_stops")
+final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/lap_times")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **8. Check Parquet**
+# MAGIC **8. Check Write**
 
 # COMMAND ----------
 
-display(spark.read.parquet(f"/mnt/{storage_account}/processed/pit_stops"))
+display(spark.read.parquet(f"/mnt/{storage_account}/processed/lap_times"))
 
 # COMMAND ----------
 

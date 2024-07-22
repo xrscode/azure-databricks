@@ -1,6 +1,24 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest constructors.json**
+# MAGIC **Ingest drivers.json**
+
+# COMMAND ----------
+
+dbutils.widgets.help()
+
+# COMMAND ----------
+
+# Create Widget
+dbutils.widgets.text("p_data_source", "")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "../includes/common_functions"
 
 # COMMAND ----------
 
@@ -120,7 +138,8 @@ from pyspark.sql.functions import col, concat, current_timestamp, lit
 drivers_with_columns_df = drivers_df.withColumnRenamed("driverId", "driver_id") \
 .withColumnRenamed("driverRef", "driver_ref") \
 .withColumn("ingestion_date", current_timestamp()) \
-.withColumn("name", concat(col("name.forename"), lit(" "), col("name.surname")))
+.withColumn("name", concat(col("name.forename"), lit(" "), col("name.surname"))) \
+.withColumn("data_source", lit(v_data_source))
 
 # COMMAND ----------
 
