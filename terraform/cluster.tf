@@ -37,8 +37,13 @@ resource "databricks_cluster" "scoped_cluster" {
     custom_tags = {
     "ResourceClass" = "SingleNode"
   }
+  # PARTIALLY WORKS:
   # depends_on = [azurerm_storage_account.storage_account_one, databricks_secret_scope.dbs_secret, azurerm_key_vault_secret.storage_account_primary_key]
 
-  # Requires secret scope & primary key stored in key vault:
-  depends_on = [azurerm_storage_account.storage_account_one, databricks_secret_scope.dbs_secret, azurerm_key_vault_secret.storage_account_primary_key, databricks_cluster.cluster, azurerm_key_vault_access_policy.one, azurerm_key_vault_access_policy.two]
+  #THIS WORKS:
+  # depends_on = [azurerm_storage_account.storage_account_one, databricks_secret_scope.dbs_secret, azurerm_key_vault_secret.storage_account_primary_key, databricks_cluster.cluster, azurerm_key_vault_access_policy.one, azurerm_key_vault_access_policy.two]
+
+  # TRIAL:
+  # Requires Secret scope setup.  Primary key stored.  Access policies to key vault. 
+  depends_on = [databricks_secret_scope.dbs_secret, azurerm_key_vault_secret.storage_account_primary_key, azurerm_key_vault_access_policy.one, azurerm_key_vault_access_policy.two]
 }
