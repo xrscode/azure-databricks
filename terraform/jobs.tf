@@ -22,7 +22,7 @@ resource "databricks_job" "ingestion_job" {
 
   task {
     task_key            = local.job_definition.settings.tasks[0].task_key
-    existing_cluster_id = local.job_definition.settings.tasks[0].existing_cluster_id
+    existing_cluster_id = databricks_cluster.cluster.id
     timeout_seconds     = local.job_definition.settings.tasks[0].timeout_seconds
 
     notebook_task {

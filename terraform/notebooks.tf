@@ -3,19 +3,24 @@ resource "databricks_directory" "formula1" {
     path = "/Users/${var.databricks_user}/Formula1"
 }
 
-# DATABRICKS: Ingestion sub directory:
+# DATABRICKS: Ingestion folder:
 resource "databricks_directory" "formula1_ingestion" {
     path = "${databricks_directory.formula1.path}/ingestion"
 }
 
-# DATABRICKS: "set-up" sub-directory:
+# DATABRICKS: "set-up" folder:
 resource "databricks_directory" "setup" {
     path = "${databricks_directory.formula1.path}/set-up"
 }
 
-# DATABRICKS: demo sub-directory:
+# DATABRICKS: demo folder:
 resource "databricks_directory" "demo" {
     path = "${databricks_directory.formula1.path}/demo"
+}
+
+# DATABRICKS: transformation folder:
+resource "databricks_directory" "transformation" {
+    path = "${databricks_directory.formula1.path}/transformation"
 }
 
 # SETUP NOTEBOOKS
@@ -176,5 +181,31 @@ resource "databricks_notebook" "join_demo" {
 resource "databricks_notebook" "outer_join_demo" {
   content_base64 = filebase64("../src/notebooks/demo/3.join_outer_demo.py")
   path           = "${databricks_directory.demo.path}/3.join_outer_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'semi_join'
+resource "databricks_notebook" "semi_join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/4.join_semi_demo.py")
+  path           = "${databricks_directory.demo.path}/4.join_semi_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'anti_join'
+resource "databricks_notebook" "anti_join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/5.join_anti_demo.py")
+  path           = "${databricks_directory.demo.path}/5.join_anti_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'cross_join'
+resource "databricks_notebook" "cross_join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/6.join_cross_demo.py")
+  path           = "${databricks_directory.demo.path}/6.join_cross_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'race_results'
+resource "databricks_notebook" "race_results" {
+  content_base64 = filebase64("../src/notebooks/transformation/race_results.py")
+  path           = "${databricks_directory.transformation.path}/race_results"
   language       = "PYTHON"  # Set the appropriate language
 }
