@@ -208,6 +208,18 @@ resource "databricks_notebook" "aggregate_demo" {
   path           = "${databricks_directory.demo.path}/7.aggregation_demo"
   language       = "PYTHON"  # Set the appropriate language
 }
+# Upload notebook; 'sql_temp_view_demo'
+resource "databricks_notebook" "sql_temp_view_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/8.sql_temp_view_demo.py")
+  path           = "${databricks_directory.demo.path}/8.sql_temp_view_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'sql_temp_view_demo_two'
+resource "databricks_notebook" "sql_temp_view_demo_two" {
+  content_base64 = filebase64("../src/notebooks/demo/9.sql_temp_view_demo.py")
+  path           = "${databricks_directory.demo.path}/9.sql_temp_view_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
 
 
 # Upload notebook; 'race_results'
@@ -220,5 +232,11 @@ resource "databricks_notebook" "race_results" {
 resource "databricks_notebook" "driver_standings" {
   content_base64 = filebase64("../src/notebooks/transformation/2.driver_standings.py")
   path           = "${databricks_directory.transformation.path}/2.driver_standings"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'constructor_standings'
+resource "databricks_notebook" "constructor_standings" {
+  content_base64 = filebase64("../src/notebooks/transformation/3.constructor_standings.py")
+  path           = "${databricks_directory.transformation.path}/3.constructor_standings"
   language       = "PYTHON"  # Set the appropriate language
 }
