@@ -202,10 +202,23 @@ resource "databricks_notebook" "cross_join_demo" {
   path           = "${databricks_directory.demo.path}/6.join_cross_demo"
   language       = "PYTHON"  # Set the appropriate language
 }
+# Upload notebook; 'aggregate_demo'
+resource "databricks_notebook" "aggregate_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/7.aggregation_demo.py")
+  path           = "${databricks_directory.demo.path}/7.aggregation_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
 
 # Upload notebook; 'race_results'
 resource "databricks_notebook" "race_results" {
-  content_base64 = filebase64("../src/notebooks/transformation/race_results.py")
-  path           = "${databricks_directory.transformation.path}/race_results"
+  content_base64 = filebase64("../src/notebooks/transformation/1.race_results.py")
+  path           = "${databricks_directory.transformation.path}/1.race_results"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'driver_standings'
+resource "databricks_notebook" "driver_standings" {
+  content_base64 = filebase64("../src/notebooks/transformation/2.driver_standings.py")
+  path           = "${databricks_directory.transformation.path}/2.driver_standings"
   language       = "PYTHON"  # Set the appropriate language
 }
