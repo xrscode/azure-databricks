@@ -13,14 +13,15 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Read Data**
+# MAGIC **Read Data** 
 
 # COMMAND ----------
 
 races_df = spark.read.parquet(f"{processed_folder_path}/races") \
 .withColumnRenamed("name", "race_name")
+
 circuits_df = spark.read.parquet(f"{processed_folder_path}/circuits") \
-.withColumnRenamed("name", "circuit_name")
+.withColumnRenamed("name", "circuit_name") 
 
 # COMMAND ----------
 
@@ -30,19 +31,50 @@ circuits_df = spark.read.parquet(f"{processed_folder_path}/circuits") \
 
 # COMMAND ----------
 
-races_df_filtered = races_df.filter("race_year = 2019")
-# display(races_df_filtered)
-# Now there are only 19 records.
+# Filter by race year:
+races_filtered_df = races_df.filter("race_year = 2019")
+
+# Filter by circuit_id:
+circuits_filtered_df = circuits_df.filter("circuit_id < 70")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Join** \
+# MAGIC **Left Outer Join** \
 # MAGIC Join on circuit.id
 
 # COMMAND ----------
 
-# Python syntax:
-race_circuits_df = circuits_df.join(races_df_filtered, circuits_df.circuit_id == races_df.circuit_id, "inner") \
-.select(circuits_df.circuit_name, circuits_df.location, circuits_df.country, races_df_filtered.race_name , races_df_filtered.round)
-display(race_circuits_df)
+# Left Outer Join
+race_left_circuits_df = circuits_filtered_df.join(races_filtered_df, circuits_filtered_df.circuit_id == races_filtered_df.circuit_id, "left") \
+.select(circuits_filtered_df.circuit_name, circuits_filtered_df.location, circuits_filtered_df.country, races_filtered_df.race_name, races_filtered_df.round) 
+
+display(race_left_circuits_df)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Right Outer Join** \
+# MAGIC Join on circuit.id
+
+# COMMAND ----------
+
+# Right Outer Join
+race_right_circuits_df = circuits_filtered_df.join(races_filtered_df, circuits_filtered_df.circuit_id == races_filtered_df.circuit_id, "right") \
+.select(circuits_filtered_df.circuit_name, circuits_filtered_df.location, circuits_filtered_df.country, races_filtered_df.race_name, races_filtered_df.round) 
+
+display(race_right_circuits_df)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Full Outer Join** \
+# MAGIC Join on circuit.id
+
+# COMMAND ----------
+
+# Full Outer Join
+race_full_circuits_df = circuits_filtered_df.join(races_filtered_df, circuits_filtered_df.circuit_id == races_filtered_df.circuit_id, "full") \
+.select(circuits_filtered_df.circuit_name, circuits_filtered_df.location, circuits_filtered_df.country, races_filtered_df.race_name, races_filtered_df.round) 
+
+display(race_full_circuits_df)

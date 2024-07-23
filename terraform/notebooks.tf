@@ -3,19 +3,24 @@ resource "databricks_directory" "formula1" {
     path = "/Users/${var.databricks_user}/Formula1"
 }
 
-# DATABRICKS: Ingestion sub directory:
+# DATABRICKS: Ingestion folder:
 resource "databricks_directory" "formula1_ingestion" {
     path = "${databricks_directory.formula1.path}/ingestion"
 }
 
-# DATABRICKS: "set-up" sub-directory:
+# DATABRICKS: "set-up" folder:
 resource "databricks_directory" "setup" {
     path = "${databricks_directory.formula1.path}/set-up"
 }
 
-# DATABRICKS: demo sub-directory:
+# DATABRICKS: demo folder:
 resource "databricks_directory" "demo" {
     path = "${databricks_directory.formula1.path}/demo"
+}
+
+# DATABRICKS: transformation folder:
+resource "databricks_directory" "transformation" {
+    path = "${databricks_directory.formula1.path}/transformation"
 }
 
 # SETUP NOTEBOOKS
@@ -176,5 +181,62 @@ resource "databricks_notebook" "join_demo" {
 resource "databricks_notebook" "outer_join_demo" {
   content_base64 = filebase64("../src/notebooks/demo/3.join_outer_demo.py")
   path           = "${databricks_directory.demo.path}/3.join_outer_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'semi_join'
+resource "databricks_notebook" "semi_join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/4.join_semi_demo.py")
+  path           = "${databricks_directory.demo.path}/4.join_semi_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'anti_join'
+resource "databricks_notebook" "anti_join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/5.join_anti_demo.py")
+  path           = "${databricks_directory.demo.path}/5.join_anti_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'cross_join'
+resource "databricks_notebook" "cross_join_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/6.join_cross_demo.py")
+  path           = "${databricks_directory.demo.path}/6.join_cross_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'aggregate_demo'
+resource "databricks_notebook" "aggregate_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/7.aggregation_demo.py")
+  path           = "${databricks_directory.demo.path}/7.aggregation_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'sql_temp_view_demo'
+resource "databricks_notebook" "sql_temp_view_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/8.sql_temp_view_demo.py")
+  path           = "${databricks_directory.demo.path}/8.sql_temp_view_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'sql_temp_view_demo_two'
+resource "databricks_notebook" "sql_temp_view_demo_two" {
+  content_base64 = filebase64("../src/notebooks/demo/9.sql_temp_view_demo.py")
+  path           = "${databricks_directory.demo.path}/9.sql_temp_view_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+
+# Upload notebook; 'race_results'
+resource "databricks_notebook" "race_results" {
+  content_base64 = filebase64("../src/notebooks/transformation/1.race_results.py")
+  path           = "${databricks_directory.transformation.path}/1.race_results"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'driver_standings'
+resource "databricks_notebook" "driver_standings" {
+  content_base64 = filebase64("../src/notebooks/transformation/2.driver_standings.py")
+  path           = "${databricks_directory.transformation.path}/2.driver_standings"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'constructor_standings'
+resource "databricks_notebook" "constructor_standings" {
+  content_base64 = filebase64("../src/notebooks/transformation/3.constructor_standings.py")
+  path           = "${databricks_directory.transformation.path}/3.constructor_standings"
   language       = "PYTHON"  # Set the appropriate language
 }
