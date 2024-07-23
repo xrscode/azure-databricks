@@ -7,9 +7,20 @@ databricks_user = "your_email_here@gmail.com"
 
 
 # Installation:
+Into terminal type:
+make install
+
+# Uploading Azure Infrastructure:
+Into terminal type:
+make setup
+
 <!-- For M1-M2 Macs -->
 From root folder, in the terminal type:
 run m1
+
+# Removing Azure Infrastructure:
+Into terminal type:
+make remove
 
 
 # BUG with Secret Scope:
