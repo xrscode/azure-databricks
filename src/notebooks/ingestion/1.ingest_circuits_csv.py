@@ -259,6 +259,15 @@ circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circ
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC **FOR CREATE PROCESSED DATABASE!!!!**
+
+# COMMAND ----------
+
+circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
+
+# COMMAND ----------
+
 # %fs
 # ls /mnt/formula1dl/processed/circuits
 
