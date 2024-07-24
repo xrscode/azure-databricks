@@ -8,6 +8,11 @@ resource "databricks_directory" "formula1_ingestion" {
     path = "${databricks_directory.formula1.path}/ingestion"
 }
 
+# DATABRICKS: raw folder:
+resource "databricks_directory" "raw" {
+    path = "${databricks_directory.formula1.path}/raw"
+}
+
 # DATABRICKS: "set-up" folder:
 resource "databricks_directory" "setup" {
     path = "${databricks_directory.formula1.path}/set-up"
@@ -143,6 +148,13 @@ resource "databricks_notebook" "ingest_qualifying_json" {
   path           = "${databricks_directory.formula1_ingestion.path}/8.ingest_qualifying_json"
   language       = "PYTHON"  # Set the appropriate language
 }
+# Upload notebook; 'create_processed_database
+resource "databricks_notebook" "create_processed_database" {
+  content_base64 = filebase64("../src/notebooks/ingestion/9.create_processed_database.sql")
+  path           = "${databricks_directory.formula1_ingestion.path}/9.create_processed_database"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
 
 # Create folder 'includes':
 resource "databricks_directory" "includes_path" {
@@ -220,7 +232,30 @@ resource "databricks_notebook" "sql_temp_view_demo_two" {
   path           = "${databricks_directory.demo.path}/9.sql_temp_view_demo"
   language       = "PYTHON"  # Set the appropriate language
 }
-
+# Upload notebook; 'sql_objects_demo'
+resource "databricks_notebook" "sql_objects_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/10.sql_objects_demo.sql")
+  path           = "${databricks_directory.demo.path}/10.sql_objects_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'sql_objects_demo_managed_tables'
+resource "databricks_notebook" "sql_objects_demo_managed_tables" {
+  content_base64 = filebase64("../src/notebooks/demo/11.sql_objects_demo_managed_tables.sql")
+  path           = "${databricks_directory.demo.path}/11.sql_objects_demo_managed_tables"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'sql_objects_demo_external_tables'
+resource "databricks_notebook" "sql_objects_demo_external_tables" {
+  content_base64 = filebase64("../src/notebooks/demo/12.sql_objects_demo_external_tables.sql")
+  path           = "${databricks_directory.demo.path}/12.sql_objects_demo_external_tables"
+  language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'sql_objects_demo_external_tables'
+resource "databricks_notebook" "sql_objects_demo_view" {
+  content_base64 = filebase64("../src/notebooks/demo/13.sql_objects_demo_view.sql")
+  path           = "${databricks_directory.demo.path}/13.sql_objects_demo_view"
+  language       = "PYTHON"  # Set the appropriate language
+}
 
 # Upload notebook; 'race_results'
 resource "databricks_notebook" "race_results" {
@@ -238,5 +273,12 @@ resource "databricks_notebook" "driver_standings" {
 resource "databricks_notebook" "constructor_standings" {
   content_base64 = filebase64("../src/notebooks/transformation/3.constructor_standings.py")
   path           = "${databricks_directory.transformation.path}/3.constructor_standings"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+# Upload notebook; 'create_raw_tables'
+resource "databricks_notebook" "create_raw_tables" {
+  content_base64 = filebase64("../src/notebooks/set-up/1.access_adls_using_access_keys.py")
+  path           = "${databricks_directory.raw.path}/1.access_adls_using_access_keys"
   language       = "PYTHON"  # Set the appropriate language
 }
