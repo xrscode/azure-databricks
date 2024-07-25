@@ -13,6 +13,10 @@ storage_account = "f1dl9072024"
 scope_name = 'f1-scope'
 
 def mount_adls(storage_account_name, container_name):
+    """
+    Args: storage account name, container name.
+    Returns: mountpoint as string.
+    """
     # Access secrets from Key Vault:
     client_id = dbutils.secrets.get(
     scope="f1-scope", key="application-client-id-demo")
@@ -20,6 +24,8 @@ def mount_adls(storage_account_name, container_name):
     scope="f1-scope", key="directory-tenant-id-demo")
     client_secret = dbutils.secrets.get(
     scope="f1-scope", key="application-client-secret")
+
+    mount_point = f"/mnt/{storage_account_name}/{container_name}"
 
     # Set spark configurations:
     configs = {"fs.azure.account.auth.type": "OAuth",
@@ -37,46 +43,47 @@ def mount_adls(storage_account_name, container_name):
         source=f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/",
         mount_point=f"/mnt/{storage_account_name}/{container_name}",
         extra_configs=configs)
-    
-    display(dbutils.fs.mounts())
+    return mount_point
 
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Mount Raw Container**
+# MAGIC **Mount Raw / Processed / Presentation Container**
 
 # COMMAND ----------
 
-mount_adls(storage_account, 'raw')
 
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Mount Processed Container**
-
-# COMMAND ----------
-
-mount_adls(storage_account, 'processed')
+mount_dict = {"raw": mount_adls(storage_account, "raw"), "presentation": mount_adls(storage_account, "presentation"), "processed": mount_adls(storage_account, "processed")}
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Mount Presentation Container**
+# MAGIC **Verify Container Dictionary**
 
 # COMMAND ----------
 
-mount_adls(storage_account, 'presentation')
+print(mount_dict)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Get Path of **Notebook****
+# MAGIC **Save Dictionary to Secret Scope** \
+# MAGIC Saving dictionary to secret scope allows other notebooks to access it.
 
 # COMMAND ----------
 
-notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
-display(notebook_path)
+import json
+db_scope = "f1-scope"
+
+# Convert dictionary to JSON string:
+mount_dict_json = json.dumps(mount_dict)
+
+# Save JSON string within DBFS file system:
+dbutils.fs.put("/mnt/mount_dict.json", json.dumps(mount_dict), overwrite=True)
+
+
+
 
 # COMMAND ----------
 

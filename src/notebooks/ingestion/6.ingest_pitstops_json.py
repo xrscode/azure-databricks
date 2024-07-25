@@ -149,6 +149,24 @@ final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/pit_
 
 # COMMAND ----------
 
+end_path = 'pit_stops'
+ 
+try:
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+    print(f"{end_path.capitalize()} table successfully created.")
+except Exception as e:
+    print(f"Exception occurred: {e}")
+    try:
+        path = f"{processed_folder_path}/{end_path}"
+        if dbutils.fs.ls(path):
+            dbutils.fs.rm(path, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+        print(f"{end_path.capitalize()} table successfully created.")
+    except Exception as e:
+        print(f"Exception occured: {e}")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC **8. Check Parquet**
 

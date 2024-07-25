@@ -193,6 +193,15 @@ races_selected_df.write.mode("overwrite").partitionBy('race_year').parquet(file_
 
 # COMMAND ----------
 
+races_path = f"{processed_folder_path}/races"
+if dbutils.fs.ls(races_path):
+    dbutils.fs.rm(races_path, True)
+
+races_selected_df.write.mode("overwrite").partitionBy('race_year').format("parquet").saveAsTable("f1_processed.races")
+
+
+# COMMAND ----------
+
 display(spark.read.parquet(file_path))
 
 # COMMAND ----------
