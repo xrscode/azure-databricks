@@ -256,6 +256,13 @@ resource "databricks_notebook" "sql_objects_demo_view" {
   path           = "${databricks_directory.demo.path}/13.sql_objects_demo_view"
   language       = "SQL"  # Set the appropriate language
 }
+# Upload notebook; 'TEST'
+resource "databricks_notebook" "test_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/TEST_ WRITE TO BLOB STORAGE.py")
+  path           = "${databricks_directory.demo.path}/TEST_ WRITE TO BLOB STORAGE"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
 
 # Upload notebook; 'race_results'
 resource "databricks_notebook" "race_results" {

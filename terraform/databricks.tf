@@ -57,4 +57,3 @@ output "resource_id" {
 output "dns_name" {
   value = azurerm_key_vault.f1keyvault.vault_uri
 }
-

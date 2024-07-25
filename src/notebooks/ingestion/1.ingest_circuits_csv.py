@@ -5,7 +5,20 @@
 
 # COMMAND ----------
 
-dbutils.widgets.help()
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
+
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
+
+processed_circuits = f"{mount_dict['processed']}/circuits"        
+
+# COMMAND ----------
+
+# dbutils.widgets.help()
 
 # COMMAND ----------
 
@@ -19,65 +32,21 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
-# MAGIC %run "../includes/common_functions"
+# MAGIC %md
+# MAGIC **1. Ensure 'Mount' function is called**
 
 # COMMAND ----------
 
 # raw_folder_path
 # add_ingestion_date
-hello()
 display(raw_folder_path)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **1. Establish credentials to allow mount to Blob Storage:**
-# MAGIC
-
-# COMMAND ----------
-
-# Access variables stored in key vault:
-# Access application-client-id token secret:
-client_id = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-id-demo")
-tenant_id = dbutils.secrets.get(
-    scope="f1-scope", key="directory-tenant-id-demo")
-client_secret = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-secret")
-storage_account = "f1dl9072024"
-container_name = 'raw'
-scope_name = 'f1-scope'
-csv_location = "dbfs:/mnt/f1dl9072024/raw/circuits.csv"
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC 2. **Configure Spark**
-
-# COMMAND ----------
-
-configs = {"fs.azure.account.auth.type": "OAuth",
-           "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-           "fs.azure.account.oauth2.client.id": client_id,
-           "fs.azure.account.oauth2.client.secret": client_secret,
-           "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC 3. **Mount**
-# MAGIC Note you can call a function from another notebook:
-
-# COMMAND ----------
-
-mount_adls(storage_account, container_name)
-
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **4. Display Mount Points**
-# MAGIC Locate: '/mnt/f1dl9072024/raw
+# MAGIC **2. Display Mount Points**
+# MAGIC Locate: '/mnt/f1dl9072024/raw \ 
+# MAGIC Raw is where we can access the raw data.
 
 # COMMAND ----------
 
@@ -86,7 +55,8 @@ display(dbutils.fs.mounts())
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **5. List files in: /mnt/f1dl9072024/raw**
+# MAGIC **3. List files in: /mnt/f1dl9072024/raw** \ 
+# MAGIC This command shows all of the files we have access to.
 
 # COMMAND ----------
 
@@ -96,23 +66,23 @@ display(dbutils.fs.mounts())
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **6. Save circuits.csv to variable**
+# MAGIC **4. Create dataframe**
 
 # COMMAND ----------
 
-circuits_df_one = spark.read.csv(f"{raw_folder_path}/circuits.csv", header='true')
+circuits_df_one = spark.read.csv(f"{mount_dict['raw']}/circuits.csv", header='true')
 
 # Displays the type of 'circuits_df'.  pyspark.sql.dataframe.DataFrame
 display(type(circuits_df_one))
 
-# Shows the tables:
+# # Shows the tables:
 display(circuits_df_one.show())
 
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **7. Print Schema**
+# MAGIC **5. Print Schema**
 # MAGIC Provides information about the schema.
 
 # COMMAND ----------
@@ -130,13 +100,13 @@ circuits_df_one.describe() \
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **8. inferSchema**
+# MAGIC **6. inferSchema**
 # MAGIC inferSchema can be used to automatically detect the data types of each column in the dataset.
 
 # COMMAND ----------
 
 # Save variable with inferSchema set to true:
-circuits_df = spark.read.csv("dbfs:/mnt/f1dl9072024/raw/circuits.csv", header='true', inferSchema='true')
+circuits_df = spark.read.csv(f"{mount_dict['raw']}/circuits.csv", header='true', inferSchema='true')
 circuits_df.printSchema()
 circuits_df.describe() \
 # .show()
@@ -144,7 +114,7 @@ circuits_df.describe() \
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **9. import from Pyspark**
+# MAGIC **7. import from Pyspark**
 
 # COMMAND ----------
 
@@ -153,7 +123,7 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType, 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **10. Specify Schema**
+# MAGIC **8. Specify Schema**
 
 # COMMAND ----------
 
@@ -171,14 +141,14 @@ circuits_schema = StructType(fields=[StructField("circuitId", IntegerType(), Fal
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **11. Re-define 'circuits_df'**
+# MAGIC **9. Re-define 'circuits_df'**
 
 # COMMAND ----------
 
 circuits_df = spark.read \
 .option("header", True) \
 .schema(circuits_schema) \
-.csv(csv_location)
+.csv(f"{mount_dict['raw']}/circuits.csv")
 display(circuits_df)  
 
 # COMMAND ----------
@@ -192,7 +162,7 @@ circuits_df.describe().show()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **11. Select columns** \
+# MAGIC **10. Select columns** \
 # MAGIC There are some columns we do not need.  We need to drop them. \
 # MAGIC One method is to use; DataFrame.select
 
@@ -224,7 +194,7 @@ circuits_selected_df = circuits_df.select(col("circuitId"), col("circuitRef"), c
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **12. Rename Columns**
+# MAGIC **11. Rename Columns**
 
 # COMMAND ----------
 
@@ -244,8 +214,12 @@ circuits_renamed_df = circuits_selected_df.withColumnRenamed("circuitID", "circu
 
 # COMMAND ----------
 
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 from pyspark.sql.functions import current_timestamp
-circuits_final_df = add_ingestion_date(circuits_renamed_df)
+final_df = add_ingestion_date(circuits_renamed_df)
 
 # COMMAND ----------
 
@@ -254,15 +228,16 @@ circuits_final_df = add_ingestion_date(circuits_renamed_df)
 
 # COMMAND ----------
 
-circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
 
-"""
-This command writes the DataFrame to the specified directory in parquet format. 
-1. Location: data is written to; /mnt/f1dl9072024/processed/circuits
-2. Format: saved as parquet. 
-3. Table Registration: The data is NOT registered as a table in the Hive metastore. 
-4.  This will only write data to directory - it will not make it SQL accessbile.
-"""
+final_df.write.mode("overwrite").parquet(processed_circuits)
+
+# """
+# This command writes the DataFrame to the specified directory in parquet format. 
+# 1. Location: data is written to; /mnt/f1dl9072024/processed/circuits
+# 2. Format: saved as parquet. 
+# 3. Table Registration: The data is NOT registered as a table in the Hive metastore. 
+# 4.  This will only write data to directory - it will not make it SQL accessbile.
+# """
 
 # COMMAND ----------
 
@@ -272,22 +247,37 @@ This command writes the DataFrame to the specified directory in parquet format.
 # COMMAND ----------
 
 # Use dbutils to delete:
-circuits_path = f"{processed_folder_path}/circuits"
-# if dbutils.fs.ls(circuits_path):
-#     dbutils.fs.rm(circuits_path, True)
+path = processed_circuits
+end_path = 'circuits'
+print(path)
 
-circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
-"""
-This command writes the DataFrame to a location managed by Hive and registers it ias a table in the Hive metastore. 
-1. 
-2. Format: data saved as parquet. 
-3. Table Registration: The data is registered as a table; ('f1_processed.circuits') in the Hive metastore making it accessible via SQL queries. 
-4. Useful when you want ot save hte data and make it queryable through spark SQL, allowing for easier data manipulation and access through SQL commands.
+try:
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+    print(f"{end_path.capitalize()} table successfully created.")
+except Exception as e:
+    print(f"Exception occurred: {e}")
+    try:
+        # If folder exists at path: /mnt/f1dl9072024/processed/circuits
+        if dbutils.fs.ls(path):
+            # Delete folder:
+            dbutils.fs.rm(path, True)
+        # Re-write Table:
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+        print(f"{end_path.capitalize()} table successfully created.")
+    except Exception as e:
+        print(f"Exception occured: {e}")
 
-NOTE: DIRECTORY CONFLICT: when you write the DataFrame directly to a directory first, that directory might not align with the managed table location expected by the Hive metastore.  The 'saveAsTable' method manages its own directory structure and locations for tables. 
+# """
+# This command writes the DataFrame to a location managed by Hive and registers it ias a table in the Hive metastore. 
+# 1. 
+# 2. Format: data saved as parquet. 
+# 3. Table Registration: The data is registered as a table; ('f1_processed.circuits') in the Hive metastore making it accessible via SQL queries. 
+# 4. Useful when you want ot save hte data and make it queryable through spark SQL, allowing for easier data manipulation and access through SQL commands.
 
-LOCATION ALREADY EXISTS ERROR: The Hive metastore expects a clean directory for its managed tables.  If the directory already contains data, it might throw an error when trying to save the table.
-"""
+# NOTE: DIRECTORY CONFLICT: when you write the DataFrame directly to a directory first, that directory might not align with the managed table location expected by the Hive metastore.  The 'saveAsTable' method manages its own directory structure and locations for tables. 
+
+# LOCATION ALREADY EXISTS ERROR: The Hive metastore expects a clean directory for its managed tables.  If the directory already contains data, it might throw an error when trying to save the table.
+# """
 
 # COMMAND ----------
 
@@ -297,11 +287,11 @@ LOCATION ALREADY EXISTS ERROR: The Hive metastore expects a clean directory for 
 # COMMAND ----------
 
 # # Read parquet to verify:
-display(spark.read.parquet(f"{processed_folder_path}/circuits"))
+display(spark.read.parquet(processed_circuits))
 
 # COMMAND ----------
 
-dbutils.fs.ls(circuits_path)
+dbutils.fs.ls(processed_circuits)
 
 # COMMAND ----------
 
