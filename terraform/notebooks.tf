@@ -152,7 +152,7 @@ resource "databricks_notebook" "ingest_qualifying_json" {
 resource "databricks_notebook" "create_processed_database" {
   content_base64 = filebase64("../src/notebooks/ingestion/9.create_processed_database.sql")
   path           = "${databricks_directory.formula1_ingestion.path}/9.create_processed_database"
-  language       = "PYTHON"  # Set the appropriate language
+  language       = "SQL"  # Set the appropriate language
 }
 
 
@@ -236,25 +236,25 @@ resource "databricks_notebook" "sql_temp_view_demo_two" {
 resource "databricks_notebook" "sql_objects_demo" {
   content_base64 = filebase64("../src/notebooks/demo/10.sql_objects_demo.sql")
   path           = "${databricks_directory.demo.path}/10.sql_objects_demo"
-  language       = "PYTHON"  # Set the appropriate language
+  language       = "SQL"  # Set the appropriate language
 }
 # Upload notebook; 'sql_objects_demo_managed_tables'
 resource "databricks_notebook" "sql_objects_demo_managed_tables" {
   content_base64 = filebase64("../src/notebooks/demo/11.sql_objects_demo_managed_tables.sql")
   path           = "${databricks_directory.demo.path}/11.sql_objects_demo_managed_tables"
-  language       = "PYTHON"  # Set the appropriate language
+  language       = "SQL"  # Set the appropriate language
 }
 # Upload notebook; 'sql_objects_demo_external_tables'
 resource "databricks_notebook" "sql_objects_demo_external_tables" {
   content_base64 = filebase64("../src/notebooks/demo/12.sql_objects_demo_external_tables.sql")
   path           = "${databricks_directory.demo.path}/12.sql_objects_demo_external_tables"
-  language       = "PYTHON"  # Set the appropriate language
+  language       = "SQL"  # Set the appropriate language
 }
 # Upload notebook; 'sql_objects_demo_external_tables'
 resource "databricks_notebook" "sql_objects_demo_view" {
   content_base64 = filebase64("../src/notebooks/demo/13.sql_objects_demo_view.sql")
   path           = "${databricks_directory.demo.path}/13.sql_objects_demo_view"
-  language       = "PYTHON"  # Set the appropriate language
+  language       = "SQL"  # Set the appropriate language
 }
 
 # Upload notebook; 'race_results'
@@ -278,7 +278,7 @@ resource "databricks_notebook" "constructor_standings" {
 
 # Upload notebook; 'create_raw_tables'
 resource "databricks_notebook" "create_raw_tables" {
-  content_base64 = filebase64("../src/notebooks/set-up/1.access_adls_using_access_keys.py")
-  path           = "${databricks_directory.raw.path}/1.access_adls_using_access_keys"
-  language       = "PYTHON"  # Set the appropriate language
+  content_base64 = filebase64("../src/notebooks/raw/1.create_raw_tables.sql")
+  path           = "${databricks_directory.raw.path}/1.create_raw_tables"
+  language       = "SQL"  # Set the appropriate language
 }

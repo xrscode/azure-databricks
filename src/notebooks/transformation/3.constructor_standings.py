@@ -42,4 +42,23 @@ final_df.write.mode("overwrite").parquet(f"{presentation_folder_path}/constructo
 
 # COMMAND ----------
 
+end_path = 'constructor_standings'
+ 
+try:
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
+    print(f"{end_path.capitalize()} table successfully created.")
+except Exception as e:
+    print(f"Exception occurred: {e}")
+    try:
+        path = f"{presentation_folder_path}/{end_path}"
+        if dbutils.fs.ls(path):
+            dbutils.fs.rm(path, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
+        print(f"{end_path.capitalize()} table successfully created.")
+
+    except Exception as e:
+        print(f"Exception occured: {e}")
+
+# COMMAND ----------
+
 display(spark.read.parquet(f"{presentation_folder_path}/driver_standings"))

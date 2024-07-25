@@ -1,0 +1,28 @@
+Section 18: Spark SQL Databases / Tables
+Section 108. Create TAble - Parquet Source. 
+-----------------------------------------------
+This requires the table 'f1_processed' to have been created.
+Notebooks > Ingestion > 9.create_processed_database
+Line 1 creates database in location: "/mnt/f1dl9072024/processed"
+
+To populate database go to:
+Noteboks > Ingestion > 1.ingest_circuits_csv
+14. 'Write to DataLake as Parquet
+file_path = "/mnt/formula1dl/processed/circuits"
+circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
+
+When trying to run this code:
+circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
+It will say that the location already exists. 
+
+Solution:
+Use dbutils to remove:
+circuits_path = f"{processed_folder_path}/circuits"
+
+# Delete the existing data files using dbutils
+if dbutils.fs.ls(circuits_path):
+    dbutils.fs.rm(circuits_path, True)
+
+Now file write correctly.
+
+** Complete for other notebooks **

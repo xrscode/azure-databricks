@@ -1,6 +1,7 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest Circuits.csv**
+# MAGIC **Ingest Circuits.csv** \
+# MAGIC Widget: "Ergast API"
 
 # COMMAND ----------
 
@@ -123,7 +124,8 @@ circuits_df_one.printSchema()
 # COMMAND ----------
 
 # Perform a summary of basic descriptive statistics:
-circuits_df_one.describe().show()
+circuits_df_one.describe() \
+# .show()
 
 # COMMAND ----------
 
@@ -136,7 +138,8 @@ circuits_df_one.describe().show()
 # Save variable with inferSchema set to true:
 circuits_df = spark.read.csv("dbfs:/mnt/f1dl9072024/raw/circuits.csv", header='true', inferSchema='true')
 circuits_df.printSchema()
-circuits_df.describe().show()
+circuits_df.describe() \
+# .show()
 
 # COMMAND ----------
 
@@ -217,7 +220,6 @@ circuits_df.describe().show()
 # Method 4: requires 'col' to be imported
 from pyspark.sql.functions import col
 circuits_selected_df = circuits_df.select(col("circuitId"), col("circuitRef"), col("name"), col("location"), col("country"), col("lat"), col("lng"), col("alt"))
-display(circuits_selected_df)
 
 # COMMAND ----------
 
@@ -234,7 +236,6 @@ circuits_renamed_df = circuits_selected_df.withColumnRenamed("circuitID", "circu
 .withColumnRenamed("lng", "longitude") \
 .withColumnRenamed("alt", "altitude") \
 .withColumn("data_source", lit(v_data_source))
-circuits_renamed_df.show()
 
 # COMMAND ----------
 
@@ -245,7 +246,6 @@ circuits_renamed_df.show()
 
 from pyspark.sql.functions import current_timestamp
 circuits_final_df = add_ingestion_date(circuits_renamed_df)
-display(circuits_final_df)
 
 # COMMAND ----------
 
@@ -254,8 +254,15 @@ display(circuits_final_df)
 
 # COMMAND ----------
 
-file_path = "/mnt/formula1dl/processed/circuits"
 circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
+
+"""
+This command writes the DataFrame to the specified directory in parquet format. 
+1. Location: data is written to; /mnt/f1dl9072024/processed/circuits
+2. Format: saved as parquet. 
+3. Table Registration: The data is NOT registered as a table in the Hive metastore. 
+4.  This will only write data to directory - it will not make it SQL accessbile.
+"""
 
 # COMMAND ----------
 
@@ -264,7 +271,23 @@ circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circ
 
 # COMMAND ----------
 
+# Use dbutils to delete:
+circuits_path = f"{processed_folder_path}/circuits"
+# if dbutils.fs.ls(circuits_path):
+#     dbutils.fs.rm(circuits_path, True)
+
 circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
+"""
+This command writes the DataFrame to a location managed by Hive and registers it ias a table in the Hive metastore. 
+1. 
+2. Format: data saved as parquet. 
+3. Table Registration: The data is registered as a table; ('f1_processed.circuits') in the Hive metastore making it accessible via SQL queries. 
+4. Useful when you want ot save hte data and make it queryable through spark SQL, allowing for easier data manipulation and access through SQL commands.
+
+NOTE: DIRECTORY CONFLICT: when you write the DataFrame directly to a directory first, that directory might not align with the managed table location expected by the Hive metastore.  The 'saveAsTable' method manages its own directory structure and locations for tables. 
+
+LOCATION ALREADY EXISTS ERROR: The Hive metastore expects a clean directory for its managed tables.  If the directory already contains data, it might throw an error when trying to save the table.
+"""
 
 # COMMAND ----------
 
@@ -274,7 +297,11 @@ circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_proc
 # COMMAND ----------
 
 # # Read parquet to verify:
-# display(spark.read.parquet(file_path))
+display(spark.read.parquet(f"{processed_folder_path}/circuits"))
+
+# COMMAND ----------
+
+dbutils.fs.ls(circuits_path)
 
 # COMMAND ----------
 

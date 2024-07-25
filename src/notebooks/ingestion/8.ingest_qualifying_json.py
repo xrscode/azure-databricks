@@ -21,6 +21,7 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # MAGIC %run "../includes/common_functions"
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC **Ingest Qualifying.json**
 
@@ -145,6 +146,24 @@ final_df = qualifying_df.withColumnRenamed("qualifyId", "qualifying_id").withCol
 # COMMAND ----------
 
 final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/qualifying")
+
+# COMMAND ----------
+
+end_path = 'qualifying'
+ 
+try:
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+    print(f"{end_path.capitalize()} table successfully created.")
+except Exception as e:
+    print(f"Exception occurred: {e}")
+    try:
+        path = f"{processed_folder_path}/{end_path}"
+        if dbutils.fs.ls(path):
+            dbutils.fs.rm(path, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+        print(f"{end_path.capitalize()} table successfully created.")
+    except Exception as e:
+        print(f"Exception occured: {e}")
 
 # COMMAND ----------
 

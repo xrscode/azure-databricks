@@ -167,6 +167,24 @@ display(spark.read.parquet(f"/mnt/{storage_account}/processed/drivers"))
 
 # COMMAND ----------
 
+end_path = 'drivers'
+
+try: 
+    drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+    print(f"{end_path.capitalize()} table successfully created.")
+except Exception as e:
+    print(f"Exception occurred: {e}")
+    try:
+        path = f"{processed_folder_path}/{end_path}"
+        if dbutils.fs.ls(path):
+            dbutils.fs.rm(path, True)
+        drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
+        print(f"{end_path.capitalize()} table successfully created.")
+    except Exception as e:
+        print(f"Exception occured: {e}")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC **Create Exit Command**\
 # MAGIC If notebook succeeds output is; "Success"
