@@ -23,79 +23,23 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **1. Establish credentials to allow mount to Blob Storage:**
-# MAGIC
+# MAGIC **Establish File Paths**
 
 # COMMAND ----------
 
-# Access variables stored in key vault:
-# Access application-client-id token secret:
-client_id = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-id-demo")
-tenant_id = dbutils.secrets.get(
-    scope="f1-scope", key="directory-tenant-id-demo")
-client_secret = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-secret")
-storage_account = "f1dl9072024"
-container_name = 'raw'
-scope_name = 'f1-scope'
-csv_location = "dbfs:/mnt/f1dl9072024/raw/races.csv"
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
 
-# COMMAND ----------
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
 
-# MAGIC %md
-# MAGIC 2. **Configure Spark**
+processed_races = f"{mount_dict['processed']}/races"
+raw_races = f"{mount_dict['raw']}/races.csv"
 
-# COMMAND ----------
-
-configs = {"fs.azure.account.auth.type": "OAuth",
-           "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-           "fs.azure.account.oauth2.client.id": client_id,
-           "fs.azure.account.oauth2.client.secret": client_secret,
-           "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC 3. **Mount**
-# MAGIC Note you can call a function from another notebook:
-
-# COMMAND ----------
-
-
-def mount_adls(storage_account_name, container_name):
-    # Access secrets from Key Vault:
-    client_id = dbutils.secrets.get(
-        scope="f1-scope", key="application-client-id-demo")
-    tenant_id = dbutils.secrets.get(
-        scope="f1-scope", key="directory-tenant-id-demo")
-    client_secret = dbutils.secrets.get(
-        scope="f1-scope", key="application-client-secret")
-
-    # Set spark configurations:
-    configs = {"fs.azure.account.auth.type": "OAuth",
-               "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-               "fs.azure.account.oauth2.client.id": client_id,
-               "fs.azure.account.oauth2.client.secret": client_secret,
-               "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-
-    # Check to see if mount exists.  Unmount if exists:
-    if any(mount.mountPoint == f"/mnt/{storage_account_name}/{container_name}" for mount in dbutils.fs.mounts()):
-        dbutils.fs.unmount(f"/mnt/{storage_account_name}/{container_name}")
-
-    # Mount the storage account container:
-    dbutils.fs.mount(
-        source=f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/",
-        mount_point=f"/mnt/{storage_account_name}/{container_name}",
-        extra_configs=configs)
-
-
-mount_adls(storage_account, container_name)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC Establish directory of mountpoint:
+print(processed_races, raw_races)
 
 # COMMAND ----------
 
@@ -109,7 +53,7 @@ mount_adls(storage_account, container_name)
 
 # COMMAND ----------
 
-races_df = spark.read.csv("dbfs:/mnt/f1dl9072024/raw/races.csv", header='true')
+races_df = spark.read.csv(raw_races, header='true')
 
 # COMMAND ----------
 
@@ -141,7 +85,7 @@ races_schema = StructType(fields = [
 races_df = spark.read \
 .option("header", True) \
 .schema(races_schema) \
-.csv(csv_location)
+.csv(raw_races)
 
 # COMMAND ----------
 
@@ -188,21 +132,19 @@ races_selected_df = races_with_timestamp_df.select(
 
 # COMMAND ----------
 
-file_path = f"/mnt/{storage_account}/processed/races"
-races_selected_df.write.mode("overwrite").partitionBy('race_year').parquet(file_path)
+races_selected_df.write.mode("overwrite").partitionBy('race_year').parquet(processed_races)
 
 # COMMAND ----------
 
-races_path = f"{processed_folder_path}/races"
-if dbutils.fs.ls(races_path):
-    dbutils.fs.rm(races_path, True)
+if dbutils.fs.ls(processed_races):
+    dbutils.fs.rm(processed_races, True)
 
 races_selected_df.write.mode("overwrite").partitionBy('race_year').format("parquet").saveAsTable("f1_processed.races")
 
 
 # COMMAND ----------
 
-display(spark.read.parquet(file_path))
+display(spark.read.parquet(processed_races))
 
 # COMMAND ----------
 

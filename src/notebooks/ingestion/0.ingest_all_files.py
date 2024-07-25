@@ -36,8 +36,19 @@
 
 # COMMAND ----------
 
-try:   
-    dbutils.notebook.run("1.ingest_circuits_csv", 0, {"p_data_source": "Ergast API"})
-except Exception as e:
-    print(e)
+notebook_list = ["1.ingest_circuits_csv", 0, {"p_data_source": "Ergast API"}, 
+                 "2.ingest_races_csv", 0, {"p_data_source": "Ergast API"},
+                 "3.ingest_constructors_json", 0, {"p_data_source": "Ergast API"},
+                 "4.ingest_drivers_json", 0, {"p_data_source": "Ergast API"},
+                 "5.ingest_results_json", 0, {"p_data_source": "Ergast API"},
+                 "6.ingest_pitstops_json", 0, {"p_data_source": "Ergast API"},
+                 "7.ingest_lap_times_csv", 0, {"p_data_source": "Ergast API"},
+                 "8.ingest_qualifying_json", 0, {"p_data_source": "Ergast API"}] 
+
+
+for notebook in notebook_list:
+    try:
+        notebook
+    except Exception as e:
+        print(f"Error! Message: {e}")
 
