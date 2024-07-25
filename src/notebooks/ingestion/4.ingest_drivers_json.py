@@ -23,74 +23,24 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **1. Establish credentials to allow mount to Blob Storage:**
+# MAGIC **Establish File Paths:**
 # MAGIC
 
 # COMMAND ----------
 
-# Access variables stored in key vault:
-# Access application-client-id token secret:
-client_id = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-id-demo")
-tenant_id = dbutils.secrets.get(
-    scope="f1-scope", key="directory-tenant-id-demo")
-client_secret = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-secret")
-storage_account = "f1dl9072024"
-container_name = 'raw'
-scope_name = 'f1-scope'
-json_location = "dbfs:/mnt/f1dl9072024/raw/drivers.json"
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
 
-# COMMAND ----------
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
 
-# MAGIC %md
-# MAGIC 2. **Configure Spark**
+processed_drivers = f"{mount_dict['processed']}/drivers"
+raw_drivers = f"{mount_dict['raw']}/drivers.json"
 
-# COMMAND ----------
-
-configs = {"fs.azure.account.auth.type": "OAuth",
-           "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-           "fs.azure.account.oauth2.client.id": client_id,
-           "fs.azure.account.oauth2.client.secret": client_secret,
-           "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC 3. **Mount**
-# MAGIC Note you can call a function from another notebook:
-
-# COMMAND ----------
-
-
-def mount_adls(storage_account_name, container_name):
-    # Access secrets from Key Vault:
-    client_id = dbutils.secrets.get(
-        scope="f1-scope", key="application-client-id-demo")
-    tenant_id = dbutils.secrets.get(
-        scope="f1-scope", key="directory-tenant-id-demo")
-    client_secret = dbutils.secrets.get(
-        scope="f1-scope", key="application-client-secret")
-
-    # Set spark configurations:
-    configs = {"fs.azure.account.auth.type": "OAuth",
-               "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-               "fs.azure.account.oauth2.client.id": client_id,
-               "fs.azure.account.oauth2.client.secret": client_secret,
-               "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-
-    # Check to see if mount exists.  Unmount if exists:
-    if any(mount.mountPoint == f"/mnt/{storage_account_name}/{container_name}" for mount in dbutils.fs.mounts()):
-        dbutils.fs.unmount(f"/mnt/{storage_account_name}/{container_name}")
-
-    # Mount the storage account container:
-    dbutils.fs.mount(
-        source=f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/",
-        mount_point=f"/mnt/{storage_account_name}/{container_name}",
-        extra_configs=configs)
-
-
-mount_adls(storage_account, container_name)
+print(processed_drivers, raw_drivers)
 
 # COMMAND ----------
 
@@ -119,7 +69,7 @@ drivers_schema = StructType(fields=[
 
 drivers_df = spark.read \
     .schema(drivers_schema) \
-    .json(f"{json_location}")
+    .json(raw_drivers)
 display(drivers_df)
 
 # COMMAND ----------
@@ -149,7 +99,7 @@ drivers_with_columns_df = drivers_df.withColumnRenamed("driverId", "driver_id") 
 
 # COMMAND ----------
 
-drivers_final_df = drivers_with_columns_df.drop(col("url"))
+final_df = drivers_with_columns_df.drop(col("url"))
 
 # COMMAND ----------
 
@@ -158,28 +108,21 @@ drivers_final_df = drivers_with_columns_df.drop(col("url"))
 
 # COMMAND ----------
 
-drivers_final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/drivers")
+final_df.write.mode("overwrite").parquet(processed_drivers)
 
 
 # COMMAND ----------
 
-display(spark.read.parquet(f"/mnt/{storage_account}/processed/drivers"))
-
-# COMMAND ----------
-
-end_path = 'drivers'
 
 try: 
-    drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
-    print(f"{end_path.capitalize()} table successfully created.")
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.drivers")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
-        path = f"{processed_folder_path}/{end_path}"
-        if dbutils.fs.ls(path):
-            dbutils.fs.rm(path, True)
-        drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
-        print(f"{end_path.capitalize()} table successfully created.")
+        if dbutils.fs.ls(processed_drivers):
+            dbutils.fs.rm(processed_drivers, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.drivers")
+        print(f"Processed drivers created succesfully.")
     except Exception as e:
         print(f"Exception occured: {e}")
 

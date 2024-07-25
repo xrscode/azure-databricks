@@ -23,79 +23,29 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **1. Establish credentials to allow mount to Blob Storage:**
+# MAGIC **Establish file paths:**
 # MAGIC
 
 # COMMAND ----------
 
-# Access variables stored in key vault:
-# Access application-client-id token secret:
-client_id = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-id-demo")
-tenant_id = dbutils.secrets.get(
-    scope="f1-scope", key="directory-tenant-id-demo")
-client_secret = dbutils.secrets.get(
-    scope="f1-scope", key="application-client-secret")
-storage_account = "f1dl9072024"
-container_name = 'raw'
-scope_name = 'f1-scope'
-json_location = "dbfs:/mnt/f1dl9072024/raw/pit_stops.json"
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
+
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
+
+processed_pitstops = f"{mount_dict['processed']}/pit_stops"
+raw_pitstops = f"{mount_dict['raw']}/pit_stops.json"
+
+print(processed_pitstops, raw_pitstops)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 2. **Configure Spark**
-
-# COMMAND ----------
-
-configs = {"fs.azure.account.auth.type": "OAuth",
-           "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-           "fs.azure.account.oauth2.client.id": client_id,
-           "fs.azure.account.oauth2.client.secret": client_secret,
-           "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC 3. **Mount**
-# MAGIC Note you can call a function from another notebook:
-
-# COMMAND ----------
-
-
-def mount_adls(storage_account_name, container_name):
-    # Access secrets from Key Vault:
-    client_id = dbutils.secrets.get(
-        scope="f1-scope", key="application-client-id-demo")
-    tenant_id = dbutils.secrets.get(
-        scope="f1-scope", key="directory-tenant-id-demo")
-    client_secret = dbutils.secrets.get(
-        scope="f1-scope", key="application-client-secret")
-
-    # Set spark configurations:
-    configs = {"fs.azure.account.auth.type": "OAuth",
-               "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-               "fs.azure.account.oauth2.client.id": client_id,
-               "fs.azure.account.oauth2.client.secret": client_secret,
-               "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
-
-    # Check to see if mount exists.  Unmount if exists:
-    if any(mount.mountPoint == f"/mnt/{storage_account_name}/{container_name}" for mount in dbutils.fs.mounts()):
-        dbutils.fs.unmount(f"/mnt/{storage_account_name}/{container_name}")
-
-    # Mount the storage account container:
-    dbutils.fs.mount(
-        source=f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/",
-        mount_point=f"/mnt/{storage_account_name}/{container_name}",
-        extra_configs=configs)
-
-
-mount_adls(storage_account, container_name)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **4. Define Schema**
+# MAGIC **Define Schema**
 
 # COMMAND ----------
 
@@ -113,20 +63,20 @@ StructField("milliseconds", IntegerType(), True)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **5. Read multi-line JSON**
+# MAGIC **Read multi-line JSON**
 
 # COMMAND ----------
 
 pit_stops_df = spark.read \
 .schema(pit_schema) \
 .option("multiLine", True) \
-.json(json_location)
+.json(raw_pitstops)
 
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **6. Rename & Add Ingestion Date**
+# MAGIC **Rename & Add Ingestion Date**
 
 # COMMAND ----------
 
@@ -141,38 +91,33 @@ final_df = pit_stops_df \
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **7. Write Parquet**
+# MAGIC **Write Parquet**
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(f"/mnt/{storage_account}/processed/pit_stops")
+final_df.write.mode("overwrite").parquet(processed_pitstops)
 
 # COMMAND ----------
 
-end_path = 'pit_stops'
- 
-try:
-    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
-    print(f"{end_path.capitalize()} table successfully created.")
+try: 
+    final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.pit_stops")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
-        path = f"{processed_folder_path}/{end_path}"
-        if dbutils.fs.ls(path):
-            dbutils.fs.rm(path, True)
-        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
-        print(f"{end_path.capitalize()} table successfully created.")
+        if dbutils.fs.ls(processed_pitstops):
+            dbutils.fs.rm(processed_pitstops, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.pit_stops")
     except Exception as e:
         print(f"Exception occured: {e}")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **8. Check Parquet**
+# MAGIC **Check Parquet**
 
 # COMMAND ----------
 
-display(spark.read.parquet(f"/mnt/{storage_account}/processed/pit_stops"))
+display(spark.read.parquet(processed_pitstops))
 
 # COMMAND ----------
 
