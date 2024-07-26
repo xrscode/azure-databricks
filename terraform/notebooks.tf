@@ -262,6 +262,13 @@ resource "databricks_notebook" "test_demo" {
   path           = "${databricks_directory.demo.path}/TEST_ WRITE TO BLOB STORAGE"
   language       = "PYTHON"  # Set the appropriate language
 }
+# Upload notebook; 'sql_basics_demo'
+resource "databricks_notebook" "sql_basics_Demo" {
+  content_base64 = filebase64("../src/notebooks/demo/14.sql_basics_demo.sql")
+  path           = "${databricks_directory.demo.path}/14.sql_basics_demo"
+  language       = "SQL"  # Set the appropriate language
+}
+
 
 
 # Upload notebook; 'race_results'
@@ -281,6 +288,12 @@ resource "databricks_notebook" "constructor_standings" {
   content_base64 = filebase64("../src/notebooks/transformation/3.constructor_standings.py")
   path           = "${databricks_directory.transformation.path}/3.constructor_standings"
   language       = "PYTHON"  # Set the appropriate language
+}
+# Upload notebook; 'calculated race results'
+resource "databricks_notebook" "calculated_race_results" {
+  content_base64 = filebase64("../src/notebooks/transformation/4.calculated_race_results.sql")
+  path           = "${databricks_directory.transformation.path}/4.calculated_race_results"
+  language       = "SQL"  # Set the appropriate language
 }
 
 # Upload notebook; 'create_raw_tables'
