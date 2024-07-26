@@ -246,24 +246,17 @@ final_df.write.mode("overwrite").parquet(processed_circuits)
 
 # COMMAND ----------
 
-# Use dbutils to delete:
-path = processed_circuits
-end_path = 'circuits'
-print(path)
-
 try:
-    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
-    print(f"{end_path.capitalize()} table successfully created.")
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.circuits")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
         # If folder exists at path: /mnt/f1dl9072024/processed/circuits
-        if dbutils.fs.ls(path):
+        if dbutils.fs.ls(processed_circuits):
             # Delete folder:
-            dbutils.fs.rm(path, True)
+            dbutils.fs.rm(processed_circuits, True)
         # Re-write Table:
-        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.{end_path}")
-        print(f"{end_path.capitalize()} table successfully created.")
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.circuits")
     except Exception as e:
         print(f"Exception occured: {e}")
 

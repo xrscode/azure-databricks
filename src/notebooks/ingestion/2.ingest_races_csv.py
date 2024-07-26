@@ -112,7 +112,7 @@ display(races_with_timestamp_df)
 # COMMAND ----------
 
 from pyspark.sql.functions import col
-races_selected_df = races_with_timestamp_df.select(
+final_df = races_with_timestamp_df.select(
   col('raceId').alias("race_id"),
   col('year').alias("race_year"),
   col('round'),
@@ -132,7 +132,7 @@ races_selected_df = races_with_timestamp_df.select(
 
 # COMMAND ----------
 
-races_selected_df.write.mode("overwrite").partitionBy('race_year').parquet(processed_races)
+final_df.write.mode("overwrite").partitionBy('race_year').parquet(processed_races)
 
 # COMMAND ----------
 

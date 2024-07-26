@@ -8,12 +8,38 @@
 
 # COMMAND ----------
 
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
+
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
+
+# Processed folder paths
+processed_circuits = f"{mount_dict['processed']}/circuits"
+processed_races = f"{mount_dict['processed']}/races"
+processed_constructors = f"{mount_dict['processed']}/constructors"
+processed_results = f"{mount_dict['processed']}/results"
+processed_drivers = f"{mount_dict['processed']}/drivers"
+
+# Presentation folder paths
+presentation_circuits = f"{mount_dict['presentation']}/circuits"
+presentation_races = f"{mount_dict['presentation']}/races"
+presentation_constructors = f"{mount_dict['presentation']}/constructors"
+presentation_results = f"{mount_dict['presentation']}/race_results"
+presentation_drivers = f"{mount_dict['presentation']}/drivers"   
+presentation_driver_standings = presentation_drivers = f"{mount_dict['presentation']}/driver_standings"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC **Read data into dataframe**
 
 # COMMAND ----------
 
-race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results")
+race_results_df = spark.read.parquet(presentation_results)
 
 # COMMAND ----------
 
@@ -38,24 +64,18 @@ display(final_df.filter("race_year = 2020"))
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(f"{presentation_folder_path}/driver_standings")
+final_df.write.mode("overwrite").parquet(presentation_driver_standings)
 
 # COMMAND ----------
 
-end_path = 'driver_standings'
- 
 try:
-    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
-    print(f"{end_path.capitalize()} table successfully created.")
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.driver_standings")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
-        path = f"{presentation_folder_path}/{end_path}"
-        if dbutils.fs.ls(path):
-            dbutils.fs.rm(path, True)
-        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
-        print(f"{end_path.capitalize()} table successfully created.")
-
+        if dbutils.fs.ls(presentation_driver_standings):
+            dbutils.fs.rm(presentation_driver_standings, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.driver_standings")
     except Exception as e:
         print(f"Exception occured: {e}")
 

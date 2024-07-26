@@ -26,3 +26,16 @@ if dbutils.fs.ls(circuits_path):
 Now file write correctly.
 
 ** Complete for other notebooks **
+
+
+
+---------------------------
+Friday 26th
+---------------------------
+Transformation:
+1. Race_results.
+2. Driver_standings.
+3. .......
+
+DEMO
+SQL
