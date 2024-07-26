@@ -9,11 +9,32 @@
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC **Establish file paths**
+
+# COMMAND ----------
+
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
+
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
+
+# Presentation folder paths
+presentation_races = f"{mount_dict['presentation']}/race_results"
+presentation_constructor_standings = presentation_drivers = f"{mount_dict['presentation']}/constructor_standings"
+
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC **Read data into dataframe**
 
 # COMMAND ----------
 
-race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results")
+race_results_df = spark.read.parquet(presentation_races)
 
 # COMMAND ----------
 
@@ -38,24 +59,18 @@ display(final_df.filter("race_year = 2020"))
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(f"{presentation_folder_path}/constructor_standings")
+final_df.write.mode("overwrite").parquet(presentation_constructor_standings)
 
 # COMMAND ----------
 
-end_path = 'constructor_standings'
- 
 try:
-    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
-    print(f"{end_path.capitalize()} table successfully created.")
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.constructor_standings")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
-        path = f"{presentation_folder_path}/{end_path}"
-        if dbutils.fs.ls(path):
-            dbutils.fs.rm(path, True)
-        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
-        print(f"{end_path.capitalize()} table successfully created.")
-
+        if dbutils.fs.ls(presentation_constructor_standings):
+            dbutils.fs.rm(presentation_constructor_standings, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.constructor_standings")
     except Exception as e:
         print(f"Exception occured: {e}")
 

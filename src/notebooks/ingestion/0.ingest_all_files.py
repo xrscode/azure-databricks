@@ -36,7 +36,8 @@
 
 # COMMAND ----------
 
-notebook_dicts = [{"file": "1.ingest_circuits_csv", "time": 0, "data": {"p_data_source": "Ergast API"}},
+notebook_dicts = [  
+                  {"file": "1.ingest_circuits_csv", "time": 0, "data": {"p_data_source": "Ergast API"}},
                   {"file": "2.ingest_races_csv", "time": 0, "data": {"p_data_source": "Ergast API"}},
                   {"file": "3.ingest_constructors_json", "time": 0, "data": {"p_data_source": "Ergast API"}},
                   {"file": "4.ingest_drivers_json", "time": 0, "data": {"p_data_source": "Ergast API"}},

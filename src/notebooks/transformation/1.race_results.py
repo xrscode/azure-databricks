@@ -4,11 +4,6 @@
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC **1. Establish mountpoint**
-
-# COMMAND ----------
-
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -18,7 +13,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **2. Read Data - Convert to DataFrame** 
+# MAGIC **Read Data - Convert to DataFrame** 
 # MAGIC 1. Drivers
 # MAGIC 2. Constructors 
 # MAGIC 3. Circuits 
@@ -30,20 +25,55 @@
 
 # COMMAND ----------
 
-races_df = spark.read.parquet(f"{processed_folder_path}/races").withColumnRenamed("name", "race_name").withColumnRenamed("race_timestamp", "race_date")
+# MAGIC %md
+# MAGIC **Establish File Paths**
 
-drivers_df = spark.read.parquet(f"{processed_folder_path}/drivers").withColumnRenamed("name", "driver_name").withColumnRenamed("number", "driver_number").withColumnRenamed("nationality", "driver_nationality")
+# COMMAND ----------
 
-constructors_df = spark.read.parquet(f"{processed_folder_path}/constructors").withColumnRenamed("name", "team")
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
 
-circuits_df = spark.read.parquet(f"{processed_folder_path}/circuits").withColumnRenamed("location", "circuit_location")
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
 
-results_df = spark.read.parquet(f"{processed_folder_path}/results").withColumnRenamed("time", "race_time")
+# Processed folder paths
+processed_circuits = f"{mount_dict['processed']}/circuits"
+processed_races = f"{mount_dict['processed']}/races"
+processed_constructors = f"{mount_dict['processed']}/constructors"
+processed_results = f"{mount_dict['processed']}/results"
+processed_drivers = f"{mount_dict['processed']}/drivers"
+
+# Presentation folder paths
+presentation_circuits = f"{mount_dict['presentation']}/circuits"
+presentation_races = f"{mount_dict['presentation']}/races"
+presentation_constructors = f"{mount_dict['presentation']}/constructors"
+presentation_results = f"{mount_dict['presentation']}/race_results"
+presentation_drivers = f"{mount_dict['presentation']}/drivers"
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **3. Join Circuits to Races**
+# MAGIC **Create Dataframes**
+
+# COMMAND ----------
+
+races_df = spark.read.parquet(processed_races).withColumnRenamed("name", "race_name").withColumnRenamed("race_timestamp", "race_date")
+
+drivers_df = spark.read.parquet(processed_drivers).withColumnRenamed("name", "driver_name").withColumnRenamed("number", "driver_number").withColumnRenamed("nationality", "driver_nationality")
+
+constructors_df = spark.read.parquet(processed_constructors).withColumnRenamed("name", "team")
+
+circuits_df = spark.read.parquet(processed_circuits).withColumnRenamed("location", "circuit_location")
+
+results_df = spark.read.parquet(processed_results).withColumnRenamed("time", "race_time")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Join Circuits to Races**
 # MAGIC
 
 # COMMAND ----------
@@ -54,7 +84,7 @@ race_circuits_df = races_df.join(circuits_df, races_df.circuit_id == circuits_df
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **4. Join results to all other dataframes**
+# MAGIC **Join results to all other dataframes**
 
 # COMMAND ----------
 
@@ -65,7 +95,7 @@ race_results_df = results_df.join(race_circuits_df, results_df.race_id == race_c
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **5. Select required columns**
+# MAGIC **Select required columns**
 
 # COMMAND ----------
 
@@ -78,28 +108,22 @@ display(final_df.filter("race_year == 2020 and race_name == 'Abu Dhabi Grand Pri
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **6. Write to Container as Parquet File**
+# MAGIC **Write to Container as Parquet File**
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(f"{presentation_folder_path}/race_results")
+final_df.write.mode("overwrite").parquet(presentation_results)
 
 # COMMAND ----------
 
-end_path = 'race_results'
- 
 try:
-    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
-    print(f"{end_path.capitalize()} table successfully created.")
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.results")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
-        path = f"{presentation_folder_path}/{end_path}"
-        if dbutils.fs.ls(path):
-            dbutils.fs.rm(path, True)
-        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.{end_path}")
-        print(f"{end_path.capitalize()} table successfully created.")
-
+        if dbutils.fs.ls(presentation_results):
+            dbutils.fs.rm(presentation_results, True)
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.results")
     except Exception as e:
         print(f"Exception occured: {e}")
 
@@ -107,8 +131,8 @@ except Exception as e:
 
 # MAGIC
 # MAGIC %md
-# MAGIC **7. Check parquet**
+# MAGIC **Check parquet**
 
 # COMMAND ----------
 
-display(spark.read.parquet(f"{presentation_folder_path}/race_results"))
+display(spark.read.parquet(presentation_results))
