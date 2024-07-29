@@ -28,6 +28,37 @@ resource "databricks_directory" "transformation" {
     path = "${databricks_directory.formula1.path}/transformation"
 }
 
+# DATABRICKS: analysis folder:
+resource "databricks_directory" "analysis" {
+    path = "${databricks_directory.formula1.path}/analysis"
+}
+
+# SETUP ANALYSIS:
+resource "databricks_notebook" "find_dominant_drivers" {
+  content_base64 = filebase64("../src/notebooks/analysis/0.find_dominant_drivers.sql")
+  path           = "${databricks_directory.analysis.path}/0.find_dominant_drivers"
+  language       = "SQL"  # Set the appropriate language
+}
+
+resource "databricks_notebook" "find_dominant_teams" {
+  content_base64 = filebase64("../src/notebooks/analysis/1.find_dominant_teams.sql")
+  path           = "${databricks_directory.analysis.path}/1.find_dominant_teams"
+  language       = "SQL"  # Set the appropriate language
+}
+resource "databricks_notebook" "find_dominant_drivers_visualisation" {
+  content_base64 = filebase64("../src/notebooks/analysis/2.viz_dominant_drivers.sql")
+  path           = "${databricks_directory.analysis.path}/2.viz_dominant_drivers"
+  language       = "SQL"  # Set the appropriate language
+  # format         = "DBC"
+}
+resource "databricks_notebook" "find_dominant_teams_visualisation" {
+  content_base64 = filebase64("../src/notebooks/analysis/3.viz_dominant_teams.sql")
+  path           = "${databricks_directory.analysis.path}/3.viz_dominant_teams"
+  language       = "SQL"  # Set the appropriate language
+  # format         = "DBC"  # For SQL notebooks, use SOURCE format
+}
+
+
 # SETUP NOTEBOOKS
 # Upload notebook; 'access data lake via access keys'.
 resource "databricks_notebook" "access_adls_access_keys" {
