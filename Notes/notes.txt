@@ -40,3 +40,8 @@ Transformation:
 3. Constructor_standings
 
 
+--------------------------------------------------------------------
+INCREMENTAL LOAD
+--------------------------------------------------------------------
+1. set-up / 8.prepare_for_incremental_load
+2. ingest_increment / 1.ingest_circuits_csv
