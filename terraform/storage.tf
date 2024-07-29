@@ -217,7 +217,6 @@ resource "azurerm_storage_blob" "upload-2021-03021-lap_times"{
     type = "Block"
     source = each.key
 }
-
 # # 2021-03-21:
 resource "azurerm_storage_blob" "upload-2021-03021-qualifying"{
     for_each = fileset(path.module, "../files/incremental_load/2021-03-21/qualifying/*")
@@ -286,6 +285,15 @@ resource "azurerm_storage_blob" "upload-2021-03021-results"{
 
 
 # # 2021-03-28:
+# Lap Times
+resource "azurerm_storage_blob" "upload-2021-03-28-lap_times"{
+    for_each = fileset(path.module, "../files/incremental_load/2021-03-28/lap_times/*")
+    name = "2021-03-28/lap_times/${replace(each.key, "../files/incremental_load/2021-03-28/lap_times/", "")}"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = each.key
+}
 resource "azurerm_storage_blob" "upload-2021-03-28-qualifying"{
     for_each = fileset(path.module, "../files/incremental_load/2021-03-28/qualifying/*")
     name = "2021-03-28/qualifying/${replace(each.key, "../files/incremental_load/2021-03-28/qualifying/", "")}"
@@ -348,6 +356,15 @@ resource "azurerm_storage_blob" "upload-2021-03-28-results"{
 
 
 # # 2021-04-18:
+# Lap Times
+resource "azurerm_storage_blob" "upload-2021-04-18-lap_times"{
+    for_each = fileset(path.module, "../files/incremental_load/2021-04-18/lap_times/*")
+    name = "2021-04-18/lap_times/${replace(each.key, "../files/incremental_load/2021-04-18/lap_times/", "")}"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = each.key
+}
 resource "azurerm_storage_blob" "upload-2021-04-18-qualifying"{
     for_each = fileset(path.module, "../files/incremental_load/2021-04-18/qualifying/*")
     name = "2021-04-18/qualifying/${replace(each.key, "../files/incremental_load/2021-04-18/qualifying/", "")}"
