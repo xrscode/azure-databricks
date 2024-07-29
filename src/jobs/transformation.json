@@ -1,0 +1,40 @@
+{
+    "job_id": 958307763707144,
+    "creator_user_name": "xrs@icloud.com",
+    "run_as_user_name": "xrs@icloud.com",
+    "run_as_owner": false,
+    "settings": {
+      "name": "F1-Transform",
+      "description": "Initiate transformations and create databases.",
+      "email_notifications": {
+        "no_alert_for_skipped_runs": false
+      },
+      "webhook_notifications": {},
+      "timeout_seconds": 0,
+      "max_concurrent_runs": 1,
+      "tasks": [
+        {
+          "task_key": "Transform_All",
+          "run_if": "ALL_SUCCESS",
+          "notebook_task": {
+            "notebook_path": "/Workspace/Users/xrs@icloud.com/Formula1/transformation/0.run_transformations",
+            "source": "WORKSPACE"
+          },
+          "existing_cluster_id": "0729-072545-4rclpwtk",
+          "timeout_seconds": 0,
+          "email_notifications": {},
+          "notification_settings": {
+            "no_alert_for_skipped_runs": false,
+            "no_alert_for_canceled_runs": false,
+            "alert_on_last_attempt": false
+          },
+          "webhook_notifications": {}
+        }
+      ],
+      "format": "MULTI_TASK",
+      "queue": {
+        "enabled": true
+      }
+    },
+    "created_time": 1722240671080
+  }

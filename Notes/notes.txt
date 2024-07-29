@@ -32,10 +32,11 @@ Now file write correctly.
 ---------------------------
 Friday 26th
 ---------------------------
+For SQL First ingest all data then run Transformation files:
+
 Transformation:
 1. Race_results.
 2. Driver_standings.
-3. .......
+3. Constructor_standings
 
-DEMO
-SQL
+

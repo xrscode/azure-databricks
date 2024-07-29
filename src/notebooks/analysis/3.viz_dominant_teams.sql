@@ -1,0 +1,29 @@
+-- Databricks notebook source
+-- MAGIC %md
+-- MAGIC **Find dominant drivers** \
+-- MAGIC Requires 'calculated_race_results' table.  Found in Transformation.
+
+-- COMMAND ----------
+
+SHOW Databases;
+USE f1_presentation;
+
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC **Create driver rank table**
+
+-- COMMAND ----------
+
+CREATE OR REPLACE TEMP VIEW v_dominant_drivers
+AS
+SELECT driver_name,
+COUNT(1) AS total_races, 
+SUM(calculated_points) AS total_points,
+AVG(calculated_points) AS avg_points,
+RANK() OVER(ORDER BY AVG(calculated_points) DESC ) driver_rank  
+FROM f1_presentation.calculated_race_results
+GROUP BY driver_name
+HAVING COUNT(1) >= 50
+ORDER BY avg_points DESC
