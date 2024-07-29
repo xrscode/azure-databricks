@@ -345,6 +345,6 @@ resource "databricks_notebook" "create_raw_tables" {
 # UTILS
 resource "databricks_notebook" "prepare_incremental_load" {
   content_base64 = filebase64("../src/notebooks/utils/1.prepare_for_incremental_load.py")
-  path           = "${databricks_directory.utils.path}/1.prepare_for_incremental_load.py"
+  path           = "${databricks_directory.utils.path}/1.prepare_for_incremental_load"
   language       = "PYTHON"  # Set the appropriate language
 }
