@@ -117,13 +117,13 @@ final_df.write.mode("overwrite").parquet(presentation_results)
 # COMMAND ----------
 
 try:
-    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.results")
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.race_results")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
         if dbutils.fs.ls(presentation_results):
             dbutils.fs.rm(presentation_results, True)
-        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.results")
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_presentation.race_results")
     except Exception as e:
         print(f"Exception occured: {e}")
 

@@ -5,15 +5,7 @@
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC Ensure f1_processed exists:
-
--- COMMAND ----------
-
--- %run "../ingestion/0.ingest_all_files"
-
--- COMMAND ----------
-
-SHOW DATABASES;
+-- MAGIC **Use f1_processed**
 
 -- COMMAND ----------
 
@@ -21,12 +13,18 @@ USE f1_processed;
 
 -- COMMAND ----------
 
-SHOW tables;
-
--- COMMAND ----------
-
-SELECT races.race_year, constructors.name, drivers.name, results.position, results.points;
+DROP TABLE IF EXISTS f1_presentation.calculated_race_results;
+CREATE TABLE IF NOT EXISTS f1_presentation.calculated_race_results
+USING parquet
+AS
+SELECT races.race_year,
+constructors.name AS team_name,
+drivers.name AS driver_name,
+results.position,
+results.points,
+11 - results.position AS calculated_points
 FROM results
-JOIN drivers ON (results.driver_id = drivers.driver_id)
-JOIN constructors ON (results.constructor_id = constructors.constructor_id)
-JOIN races ON (results.race_id = races.race_id)
+JOIN f1_processed.drivers ON (results.driver_id = drivers.driver_id)
+JOIN f1_processed.constructors ON (results.constructor_id = constructors.constructor_id)
+JOIN f1_processed.races ON (results.race_id = races.race_id)
+WHERE results.position <= 10;

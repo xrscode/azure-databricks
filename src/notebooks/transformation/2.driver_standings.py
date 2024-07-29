@@ -30,7 +30,7 @@ presentation_races = f"{mount_dict['presentation']}/races"
 presentation_constructors = f"{mount_dict['presentation']}/constructors"
 presentation_results = f"{mount_dict['presentation']}/race_results"
 presentation_drivers = f"{mount_dict['presentation']}/drivers"   
-presentation_driver_standings = presentation_drivers = f"{mount_dict['presentation']}/driver_standings"
+presentation_driver_standings = f"{mount_dict['presentation']}/driver_standings"
 
 # COMMAND ----------
 

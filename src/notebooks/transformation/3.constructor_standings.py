@@ -24,7 +24,7 @@ with open(file_path, "r") as f:
 
 # Presentation folder paths
 presentation_races = f"{mount_dict['presentation']}/race_results"
-presentation_constructor_standings = presentation_drivers = f"{mount_dict['presentation']}/constructor_standings"
+presentation_constructor_standings = f"{mount_dict['presentation']}/constructor_standings"
 
 
 # COMMAND ----------
@@ -76,4 +76,4 @@ except Exception as e:
 
 # COMMAND ----------
 
-display(spark.read.parquet(f"{presentation_folder_path}/driver_standings"))
+display(spark.read.parquet(f"{presentation_folder_path}/constructor_standings"))

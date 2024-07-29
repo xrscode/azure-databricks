@@ -58,4 +58,14 @@ for note in notebook_dicts:
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC **Setup Databases**
 
+# COMMAND ----------
+
+try:
+  dbutils.notebook.run("9.create_processed_database", 0)
+except Exception as e:
+  print(f"Error! Message: {e}")
+
+print('ALl files ingested. Databases setup.')
