@@ -32,6 +32,10 @@ resource "databricks_directory" "transformation" {
 resource "databricks_directory" "analysis" {
     path = "${databricks_directory.formula1.path}/analysis"
 }
+# DATABRICKS: utils_folder:
+resource "databricks_directory" "utils" {
+    path = "${databricks_directory.formula1.path}/utils"
+}
 
 # SETUP ANALYSIS:
 resource "databricks_notebook" "find_dominant_drivers" {
@@ -336,4 +340,11 @@ resource "databricks_notebook" "create_raw_tables" {
   content_base64 = filebase64("../src/notebooks/raw/1.create_raw_tables.sql")
   path           = "${databricks_directory.raw.path}/1.create_raw_tables"
   language       = "SQL"  # Set the appropriate language
+}
+
+# UTILS
+resource "databricks_notebook" "prepare_incremental_load" {
+  content_base64 = filebase64("../src/notebooks/utils/1.prepare_for_incremental_load.py")
+  path           = "${databricks_directory.utils.path}/1.prepare_for_incremental_load.py"
+  language       = "PYTHON"  # Set the appropriate language
 }

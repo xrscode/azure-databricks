@@ -18,6 +18,11 @@ resource "azurerm_storage_container" "raw" {
   storage_account_name  = azurerm_storage_account.storage_account_one.name
   container_access_type = "private"
 }
+resource "azurerm_storage_container" "raw_increment" {
+  name                  = "raw-increment"
+  storage_account_name  = azurerm_storage_account.storage_account_one.name
+  container_access_type = "private"
+}
 
 # Create Processed container:
 resource "azurerm_storage_container" "processed" {
@@ -199,4 +204,203 @@ resource "azurerm_storage_blob" "upload-qualifying-2-raw"{
     storage_container_name = azurerm_storage_container.raw.name
     type = "Block"
     source = "../files/qualifying/qualifying_split_2.json"
+}
+
+
+# # 2021-03-21:
+# Lap Times
+resource "azurerm_storage_blob" "upload-2021-03021-lap_times"{
+    for_each = fileset(path.module, "../files/incremental_load/2021-03-21/lap_times/*")
+    name = "2021-03-21/lap_times/${replace(each.key, "../files/incremental_load/2021-03-21/lap_times/", "")}"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = each.key
+}
+
+# # 2021-03-21:
+resource "azurerm_storage_blob" "upload-2021-03021-qualifying"{
+    for_each = fileset(path.module, "../files/incremental_load/2021-03-21/qualifying/*")
+    name = "2021-03-21/qualifying/${replace(each.key, "../files/incremental_load/2021-03-21/qualifying/", "")}"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = each.key
+}
+# # 2021-03-21 CIRCUITS:
+resource "azurerm_storage_blob" "upload-2021-03021-circuits"{
+    name = "2021-03-21/circuits.csv"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-21/circuits.csv"
+}
+# # 2021-03-21 CONSTRUCTORS:
+resource "azurerm_storage_blob" "upload-2021-03021-constructors"{
+    name = "2021-03-21/constructors.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-21/constructors.json"
+}
+# # 2021-03-21 DRIVERS:
+resource "azurerm_storage_blob" "upload-2021-03021-drivers"{
+    name = "2021-03-21/drivers.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-21/drivers.json"
+}
+# # 2021-03-21 pit_stops:
+resource "azurerm_storage_blob" "upload-2021-03021-pit_stops"{
+    name = "2021-03-21/pit_stops.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-21/pit_stops.json"
+}
+# # 2021-03-21 RACES:
+resource "azurerm_storage_blob" "upload-2021-03021-races"{
+    name = "2021-03-21/races.csv"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-21/races.csv"
+}
+# # 2021-03-21 RESULTS:
+resource "azurerm_storage_blob" "upload-2021-03021-results"{
+    name = "2021-03-21/results.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-21/results.json"
+}
+
+
+
+
+
+
+
+
+
+
+# # 2021-03-28:
+resource "azurerm_storage_blob" "upload-2021-03-28-qualifying"{
+    for_each = fileset(path.module, "../files/incremental_load/2021-03-28/qualifying/*")
+    name = "2021-03-28/qualifying/${replace(each.key, "../files/incremental_load/2021-03-28/qualifying/", "")}"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = each.key
+}
+# # 2021-03-28 CIRCUITS:
+resource "azurerm_storage_blob" "upload-2021-03-28-circuits"{
+    name = "2021-03-28/circuits.csv"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-28/circuits.csv"
+}
+# # 2021-03-28 CONSTRUCTORS:
+resource "azurerm_storage_blob" "upload-2021-03-28-constructors"{
+    name = "2021-03-28/constructors.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-28/constructors.json"
+}
+# # 2021-03-28 DRIVERS:
+resource "azurerm_storage_blob" "upload-2021-03-28-drivers"{
+    name = "2021-03-28/drivers.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-28/drivers.json"
+}
+# # 2021-03-28 pit_stops:
+resource "azurerm_storage_blob" "upload-2021-03-28-pit_stops"{
+    name = "2021-03-28/pit_stops.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-28/pit_stops.json"
+}
+# # 2021-03-28 RACES:
+resource "azurerm_storage_blob" "upload-2021-03-28-races"{
+    name = "2021-03-28/races.csv"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-28/races.csv"
+}
+# # 2021-03-28 RESULTS:
+resource "azurerm_storage_blob" "upload-2021-03-28-results"{
+    name = "2021-03-28/results.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-03-28/results.json"
+}
+
+
+
+
+
+# # 2021-04-18:
+resource "azurerm_storage_blob" "upload-2021-04-18-qualifying"{
+    for_each = fileset(path.module, "../files/incremental_load/2021-04-18/qualifying/*")
+    name = "2021-04-18/qualifying/${replace(each.key, "../files/incremental_load/2021-04-18/qualifying/", "")}"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = each.key
+}
+# # 2021-04-18 CIRCUITS:
+resource "azurerm_storage_blob" "upload-2021-04-18-circuits"{
+    name = "2021-04-18/circuits.csv"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-04-18/circuits.csv"
+}
+# # 2021-04-18 CONSTRUCTORS:
+resource "azurerm_storage_blob" "upload-2021-04-18-constructors"{
+    name = "2021-04-18/constructors.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-04-18/constructors.json"
+}
+# # 2021-04-18 DRIVERS:
+resource "azurerm_storage_blob" "upload-2021-04-18-drivers"{
+    name = "2021-04-18/drivers.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-04-18/drivers.json"
+}
+# # 2021-04-18 pit_stops:
+resource "azurerm_storage_blob" "upload-2021-04-18-pit_stops"{
+    name = "2021-04-18/pit_stops.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-04-18/pit_stops.json"
+}
+# # 2021-04-18 RACES:
+resource "azurerm_storage_blob" "upload-2021-04-18-races"{
+    name = "2021-04-18/races.csv"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-04-18/races.csv"
+}
+# # 2021-04-18 RESULTS:
+resource "azurerm_storage_blob" "upload-2021-04-18-results"{
+    name = "2021-04-18/results.json"
+    storage_account_name = azurerm_storage_account.storage_account_one.name
+    storage_container_name = azurerm_storage_container.raw_increment.name
+    type = "Block"
+    source = "../files/incremental_load/2021-04-18/results.json"
 }
