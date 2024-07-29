@@ -46,16 +46,14 @@ resource "databricks_notebook" "find_dominant_teams" {
   language       = "SQL"  # Set the appropriate language
 }
 resource "databricks_notebook" "find_dominant_drivers_visualisation" {
-  content_base64 = filebase64("../src/notebooks/analysis/2.viz_dominant_drivers.sql")
+  # Upload DBC
+  source         = "../src/notebooks/analysis/2.viz_dominant_drivers.dbc"
   path           = "${databricks_directory.analysis.path}/2.viz_dominant_drivers"
-  language       = "SQL"  # Set the appropriate language
-  # format         = "DBC"
 }
 resource "databricks_notebook" "find_dominant_teams_visualisation" {
-  content_base64 = filebase64("../src/notebooks/analysis/3.viz_dominant_teams.sql")
+  # Upload DBC
+  source         = "../src/notebooks/analysis/3.viz_dominant_teams.dbc"
   path           = "${databricks_directory.analysis.path}/3.viz_dominant_teams"
-  language       = "SQL"  # Set the appropriate language
-  # format         = "DBC"  # For SQL notebooks, use SOURCE format
 }
 
 
@@ -325,6 +323,12 @@ resource "databricks_notebook" "calculated_race_results" {
   content_base64 = filebase64("../src/notebooks/transformation/4.calculated_race_results.sql")
   path           = "${databricks_directory.transformation.path}/4.calculated_race_results"
   language       = "SQL"  # Set the appropriate language
+}
+# Upload notebook; 'run_transformations'
+resource "databricks_notebook" "run_transformations" {
+  content_base64 = filebase64("../src/notebooks/transformation/0.run_transformations.py")
+  path           = "${databricks_directory.transformation.path}/0.run_transformations"
+  language       = "PYTHON"  # Set the appropriate language
 }
 
 # Upload notebook; 'create_raw_tables'
