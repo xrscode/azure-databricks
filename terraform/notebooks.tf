@@ -32,6 +32,10 @@ resource "databricks_directory" "transformation" {
 resource "databricks_directory" "analysis" {
     path = "${databricks_directory.formula1.path}/analysis"
 }
+# DATABRICKS: utils_folder:
+resource "databricks_directory" "utils" {
+    path = "${databricks_directory.formula1.path}/utils"
+}
 
 # SETUP ANALYSIS:
 resource "databricks_notebook" "find_dominant_drivers" {
@@ -46,16 +50,14 @@ resource "databricks_notebook" "find_dominant_teams" {
   language       = "SQL"  # Set the appropriate language
 }
 resource "databricks_notebook" "find_dominant_drivers_visualisation" {
-  content_base64 = filebase64("../src/notebooks/analysis/2.viz_dominant_drivers.sql")
+  # Upload DBC
+  source         = "../src/notebooks/analysis/2.viz_dominant_drivers.dbc"
   path           = "${databricks_directory.analysis.path}/2.viz_dominant_drivers"
-  language       = "SQL"  # Set the appropriate language
-  # format         = "DBC"
 }
 resource "databricks_notebook" "find_dominant_teams_visualisation" {
-  content_base64 = filebase64("../src/notebooks/analysis/3.viz_dominant_teams.sql")
+  # Upload DBC
+  source         = "../src/notebooks/analysis/3.viz_dominant_teams.dbc"
   path           = "${databricks_directory.analysis.path}/3.viz_dominant_teams"
-  language       = "SQL"  # Set the appropriate language
-  # format         = "DBC"  # For SQL notebooks, use SOURCE format
 }
 
 
@@ -326,10 +328,23 @@ resource "databricks_notebook" "calculated_race_results" {
   path           = "${databricks_directory.transformation.path}/4.calculated_race_results"
   language       = "SQL"  # Set the appropriate language
 }
+# Upload notebook; 'run_transformations'
+resource "databricks_notebook" "run_transformations" {
+  content_base64 = filebase64("../src/notebooks/transformation/0.run_transformations.py")
+  path           = "${databricks_directory.transformation.path}/0.run_transformations"
+  language       = "PYTHON"  # Set the appropriate language
+}
 
 # Upload notebook; 'create_raw_tables'
 resource "databricks_notebook" "create_raw_tables" {
   content_base64 = filebase64("../src/notebooks/raw/1.create_raw_tables.sql")
   path           = "${databricks_directory.raw.path}/1.create_raw_tables"
   language       = "SQL"  # Set the appropriate language
+}
+
+# UTILS
+resource "databricks_notebook" "prepare_incremental_load" {
+  content_base64 = filebase64("../src/notebooks/utils/1.prepare_for_incremental_load.py")
+  path           = "${databricks_directory.utils.path}/1.prepare_for_incremental_load.py"
+  language       = "PYTHON"  # Set the appropriate language
 }

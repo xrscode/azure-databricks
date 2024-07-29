@@ -1,6 +1,6 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC **Find_dominant_teams** \
+-- MAGIC **Find_dominant_teams**
 
 -- COMMAND ----------
 
