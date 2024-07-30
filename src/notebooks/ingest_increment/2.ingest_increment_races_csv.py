@@ -4,10 +4,6 @@
 
 # COMMAND ----------
 
-dbutils.widgets.help()
-
-# COMMAND ----------
-
 # Create Widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
@@ -90,7 +86,7 @@ races_df = spark.read \
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Update Ingestion Date timestamp**
+# MAGIC **Update Ingestion Date timestamp** \
 # MAGIC Note that here we are combining two columns; date and time into one using the 'concat' function.
 
 # COMMAND ----------

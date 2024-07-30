@@ -1,4 +1,8 @@
 # Databricks notebook source
+# MAGIC %run "../utils/1.prepare_for_incremental_load"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC **Ingest Circuits INCREMENT** \
 # MAGIC Widget: "Ergast API"
