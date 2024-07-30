@@ -1,12 +1,50 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest Races.csv**
+# MAGIC **Ingest Increment Races**
 
 # COMMAND ----------
 
-# Create Widget
+# March 21st:
+results_file_1 = "/mnt/f1dl9072024/raw-increment/2021-03-21/results.json"
+# Create temp view so SQL can be performed.
+spark.read.json(results_file_1).createOrReplaceTempView("results_cutover")
+
+# March 28th (id: 1052):
+results_file_2 = "/mnt/f1dl9072024/raw-increment/2021-03-28/results.json"
+# Create temp view so SQL can be performed
+spark.read.json(results_file_2).createOrReplaceTempView("results_w1")
+
+
+# April 18th (id: 1053):
+results_file_3 = "/mnt/f1dl9072024/raw-increment/2021-04-18/results.json"
+# Create temp view so SQL can be performed
+spark.read.json(results_file_3).createOrReplaceTempView("results_w2")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Widget for Data Source**
+# MAGIC
+
+# COMMAND ----------
+
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Widget for File Date**
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Load config and common functions**
 
 # COMMAND ----------
 
@@ -19,37 +57,23 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Establish File Paths**
+# MAGIC **Establish File Paths:**
+# MAGIC
 
 # COMMAND ----------
 
 import json
-# List files in the expected directory
-files = dbutils.fs.ls("/mnt")
-
 # Set File Location
 file_path = "/dbfs/mnt/mount_dict.json"
 with open(file_path, "r") as f:
     mount_dict = json.load(f)  
 
+raw_increment_races = f"{mount_dict['raw_increment']}/{v_file_date}/races.csv"
 processed_races = f"{mount_dict['processed']}/races"
-raw_races = f"{mount_dict['raw']}/races.csv"
 
-print(processed_races, raw_races)
-
-# COMMAND ----------
-
-# MAGIC %fs
-# MAGIC ls /mnt/f1dl9072024/raw
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Read to dataframe**
-
-# COMMAND ----------
-
-races_df = spark.read.csv(raw_races, header='true')
+dbs = "f1_processed"
+tbl = "races"
+clm = "race_id"   
 
 # COMMAND ----------
 
@@ -74,20 +98,19 @@ races_schema = StructType(fields = [
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Re-define 'races'**
+# MAGIC **Create Dataframe**
 
 # COMMAND ----------
 
 races_df = spark.read \
 .option("header", True) \
 .schema(races_schema) \
-.csv(raw_races)
+.csv(raw_increment_races)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Update Ingestion Date timestamp** \
-# MAGIC Note that here we are combining two columns; date and time into one using the 'concat' function.
+# MAGIC **Add ingestion_date, race_timestamp, data_source**
 
 # COMMAND ----------
 
@@ -96,7 +119,7 @@ races_with_timestamp_df = races_df \
 .withColumn("ingestion_date", current_timestamp()) \
 .withColumn("race_timestamp", to_timestamp(concat(col('date'), lit(' '), col('time')), 'yyyy-MM-dd HH:mm:ss')) \
 .withColumn("data_source", lit(v_data_source))
-display(races_with_timestamp_df)
+
 
 # COMMAND ----------
 
@@ -150,10 +173,5 @@ display(spark.read.parquet(processed_races))
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC **Create Exit Command**\
-# MAGIC If notebook succeeds output is; "Success"
-
-# COMMAND ----------
-
-dbutils.notebook.exit("Success")
+# MAGIC %sql
+# MAGIC SELECT * FROM f1_processed.races;

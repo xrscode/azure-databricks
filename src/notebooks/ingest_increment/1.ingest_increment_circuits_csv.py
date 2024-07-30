@@ -1,30 +1,30 @@
 # Databricks notebook source
-# MAGIC %run "../utils/1.prepare_for_incremental_load"
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC **Ingest Circuits INCREMENT** \
-# MAGIC Widget: "Ergast API"
+# MAGIC **Ingest Increment Circuits.json**
 
 # COMMAND ----------
 
-import json
-# List files in the expected directory
-files = dbutils.fs.ls("/mnt")
+# March 21st:
+results_file_1 = "/mnt/f1dl9072024/raw-increment/2021-03-21/results.json"
+# Create temp view so SQL can be performed.
+spark.read.json(results_file_1).createOrReplaceTempView("results_cutover")
 
-# Set File Location
-file_path = "/dbfs/mnt/mount_dict.json"
-with open(file_path, "r") as f:
-    mount_dict = json.load(f)  
+# March 28th (id: 1052):
+results_file_2 = "/mnt/f1dl9072024/raw-increment/2021-03-28/results.json"
+# Create temp view so SQL can be performed
+spark.read.json(results_file_2).createOrReplaceTempView("results_w1")
 
-processed_circuits = f"{mount_dict['processed']}/circuits"
-raw_increment = f"{mount_dict['raw_increment']}"   
+
+# April 18th (id: 1053):
+results_file_3 = "/mnt/f1dl9072024/raw-increment/2021-04-18/results.json"
+# Create temp view so SQL can be performed
+spark.read.json(results_file_3).createOrReplaceTempView("results_w2")
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC **Create Widget for Data Source**
+# MAGIC
 
 # COMMAND ----------
 
@@ -38,8 +38,13 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
-dbutils.widgets.text("p_file_date", "2021-03-21")
+dbutils.widgets.text("p_file_date", "2021-03-28")
 v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Load config and common functions**
 
 # COMMAND ----------
 
@@ -47,30 +52,37 @@ v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
-# MAGIC **Display Mount Points** \
-# MAGIC Locate: /mnt/f1dl9072024/raw-increment
+# MAGIC **Establish File Paths:**
 # MAGIC
 
 # COMMAND ----------
 
-display(dbutils.fs.mounts())
+import json
+# List files in the expected directory
+files = dbutils.fs.ls("/mnt")
+
+# Set File Location
+file_path = "/dbfs/mnt/mount_dict.json"
+with open(file_path, "r") as f:
+    mount_dict = json.load(f)  
+
+processed_results = f"{mount_dict['processed']}/results"
+raw_increment_circuits = f"{mount_dict['raw_increment']}/{v_file_date}/circuits.csv"
+processed_circuits = f"{mount_dict['processed']}/circuits"
+
+dbs = "f1_processed"
+tbl = "circuits"
+clm = "race_id"   
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **List files in: /mnt/f1dl9072024/raw-increment** \ 
-# MAGIC This command shows all of the files we have access to.
-
-# COMMAND ----------
-
-# MAGIC %fs
-# MAGIC ls /mnt/f1dl9072024/raw-increment
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Define Specify Schema**
+# MAGIC **Define Schema**
 
 # COMMAND ----------
 
@@ -97,7 +109,7 @@ circuits_schema = StructType(fields=[StructField("circuitId", IntegerType(), Fal
 circuits_df = spark.read \
 .option("header", True) \
 .schema(circuits_schema) \
-.csv(f"{raw_increment}/{v_file_date}/circuits.csv")  
+.csv(raw_increment_circuits)  
 
 # COMMAND ----------
 
@@ -129,10 +141,6 @@ circuits_renamed_df = circuits_selected_df.withColumnRenamed("circuitID", "circu
 
 # COMMAND ----------
 
-# MAGIC %run "../includes/common_functions"
-
-# COMMAND ----------
-
 from pyspark.sql.functions import current_timestamp
 final_df = add_ingestion_date(circuits_renamed_df)
 
@@ -144,16 +152,15 @@ final_df = add_ingestion_date(circuits_renamed_df)
 # COMMAND ----------
 
 try:
-    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.circuits")
+    final_df.write.mode("overwrite").format("parquet").saveAsTable(f"{dbs}.{tbl}")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
-        # If folder exists at path: /mnt/f1dl9072024/processed/circuits
         if dbutils.fs.ls(processed_circuits):
             # Delete folder:
             dbutils.fs.rm(processed_circuits, True)
         # Re-write Table:
-        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.circuits")
+        final_df.write.mode("overwrite").format("parquet").saveAsTable(f"{dbs}.{tbl}")
     except Exception as e:
         print(f"Exception occured: {e}")
 
@@ -162,3 +169,8 @@ except Exception as e:
 
 # # Read parquet to verify:
 display(spark.read.parquet(processed_circuits))
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT COUNT(1) FROM f1_processed.circuits
