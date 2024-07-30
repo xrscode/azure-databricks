@@ -223,7 +223,11 @@ resource "databricks_notebook" "create_processed_database" {
 
 
 # INCREMENT
-
+resource "databricks_notebook" "ingest_all_files_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/0.ingest_increment_all_files.py")
+  path           = "${databricks_directory.ingest_increment.path}/0.ingest_increment_all_files"
+  language       = "PYTHON"  # Set the appropriate language
+}
 resource "databricks_notebook" "ingest_circuits_increment" {
   content_base64 = filebase64("../src/notebooks/ingest_increment/1.ingest_increment_circuits_csv.py")
   path           = "${databricks_directory.ingest_increment.path}/1.ingest_increment_circuits_csv"
