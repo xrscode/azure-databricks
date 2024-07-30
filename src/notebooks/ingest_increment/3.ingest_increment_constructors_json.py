@@ -1,16 +1,32 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest constructors JSON**
+# MAGIC **Ingest Increment Constructors**
 
 # COMMAND ----------
 
-dbutils.widgets.help()
+# MAGIC %md
+# MAGIC **Create Widget for Data Source**
+# MAGIC
 
 # COMMAND ----------
 
-# Create Widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Widget for File Date**
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Load config and common functions**
 
 # COMMAND ----------
 
@@ -23,24 +39,26 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Establish paths:**
+# MAGIC **Establish File Paths:**
 # MAGIC
 
 # COMMAND ----------
 
 import json
-# List files in the expected directory
-files = dbutils.fs.ls("/mnt")
-
 # Set File Location
 file_path = "/dbfs/mnt/mount_dict.json"
 with open(file_path, "r") as f:
     mount_dict = json.load(f)  
 
-processed_constructors = f"{mount_dict['processed']}/constructors"
-raw_constructors = f"{mount_dict['raw']}/constructors.json"
+# Read:
+raw_increment_constructors = f"{mount_dict['raw_increment']}/{v_file_date}/constructors.json"
 
-print(processed_constructors, raw_constructors)
+# Write:
+processed_constructors = f"{mount_dict['processed']}/constructors"
+
+dbs = "f1_processed"
+tbl = "races"
+clm = "race_id"   
 
 # COMMAND ----------
 
@@ -55,7 +73,7 @@ constructors_schema = "constructorId INTEGER, constructorRef STRING, name STRING
 
 constructor_df = spark.read \
 .schema(constructors_schema) \
-.json(raw_constructors)
+.json(raw_increment_constructors)
 
 # COMMAND ----------
 
@@ -105,13 +123,3 @@ except Exception as e:
         print(f"Exception occured: {e}")
 
 
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Create Exit Command**\
-# MAGIC If notebook succeeds output is; "Success"
-
-# COMMAND ----------
-
-dbutils.notebook.exit("Success")
