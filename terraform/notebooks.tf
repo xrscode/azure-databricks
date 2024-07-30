@@ -223,17 +223,51 @@ resource "databricks_notebook" "create_processed_database" {
 
 
 # INCREMENT
-# Upload notebook; 'ingest_races_file'
+
 resource "databricks_notebook" "ingest_circuits_increment" {
   content_base64 = filebase64("../src/notebooks/ingest_increment/1.ingest_increment_circuits_csv.py")
   path           = "${databricks_directory.ingest_increment.path}/1.ingest_increment_circuits_csv"
   language       = "PYTHON"  # Set the appropriate language
 }
-# Upload notebook; 'ingest_races_file'
 resource "databricks_notebook" "ingest_races_increment" {
   content_base64 = filebase64("../src/notebooks/ingest_increment/2.ingest_increment_races_csv.py")
   path           = "${databricks_directory.ingest_increment.path}/2.ingest_increment_races_csv"
   language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "ingest_constructors_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/3.ingest_increment_constructors_json.py")
+  path           = "${databricks_directory.ingest_increment.path}/3.ingest_increment_constructors_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "ingest_drivers_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/4.ingest_increment_drivers_json.py")
+  path           = "${databricks_directory.ingest_increment.path}/4.ingest_increment_drivers_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "ingest_results_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/5.ingest_increment_results_json.py")
+  path           = "${databricks_directory.ingest_increment.path}/5.ingest_increment_results_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "ingest_pitstops_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/6.ingest_increment_pitstops_json.py")
+  path           = "${databricks_directory.ingest_increment.path}/6.ingest_increment_pitstops_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "ingest_lap_times_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/7.ingest_increment_lap_times_csv.py")
+  path           = "${databricks_directory.ingest_increment.path}/7.ingest_increment_lap_times_csv"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "ingest_qualifying_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/8.ingest_increment_qualifying_json.py")
+  path           = "${databricks_directory.ingest_increment.path}/8.ingest_increment_qualifying_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "ingest_processed_database_increment" {
+  content_base64 = filebase64("../src/notebooks/ingest_increment/9.create_increment_processed_database.sql")
+  path           = "${databricks_directory.ingest_increment.path}/9.create_increment_processed_database"
+  language       = "SQL"  # Set the appropriate language
 }
 
 

@@ -183,7 +183,7 @@ final_df = df_rename.withColumn("ingestion_date", current_timestamp()).withColum
 
 # COMMAND ----------
 
-partition_list = overwrite_partition(clm, final_df)
+partition_list = set_partition(clm, final_df)
 
 select_final_df = final_df.select(partition_list)
 
@@ -202,7 +202,8 @@ display(select_final_df)
 
 # COMMAND ----------
 
-incremental_load(dbs, tbl, col)
+write = overwrite_partition(dbs, tbl, clm, select_final_df)
+display(write)
 
 # COMMAND ----------
 
