@@ -13,16 +13,35 @@ def add_ingestion_date(input_df):
     return output_df
 
 
-def overwrite_partition(db, table, column):
-    if (spark._jsparkSession.catalog().tableExists(f"{db}.{table}")):
+def overwrite_partition(db, table, column, df):
+    """
+    Overwrites the specified partition in a Spark SQL table. If the table does not exist,
+    creates a new partitioned table.
+    
+    Parameters:
+    db (str): The name of the database.
+    table (str): The name of the table.
+    column (str): The column to partition by.
+    df (DataFrame): The Spark DataFrame to write.
+    
+    Returns:
+    None
+    """
+    table_full_name = f"{db}.{table}"
+    
+    if spark._jsparkSession.catalog().tableExists(table_full_name):
         try:
-            select_final_df.write.mode("overwrite").insertInto(f"{db}.{table}")
+            df.write.mode("overwrite").insertInto(table_full_name)
+            print(f"Successfully inserted into existing table: {table_full_name}")
         except Exception as e:
+            print(f"Failed to insert into existing table: {table_full_name}. Error: {e}")
             return e
     else:
         try:
-            select_final_df.write.mode("overwrite").partitionBy(f"{column}").format("parquet").saveAsTable(f"{db}.{table}")
+            df.write.mode("overwrite").partitionBy(column).format("parquet").saveAsTable(table_full_name)
+            print(f"Successfully created and inserted into new partitioned table: {table_full_name}")
         except Exception as e:
+            print(f"Failed to create or insert into new partitioned table: {table_full_name}. Error: {e}")
             return e
         
 
