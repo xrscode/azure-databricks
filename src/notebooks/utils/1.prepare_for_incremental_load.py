@@ -36,7 +36,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Dop all tables from f1_presentation:
+# MAGIC Drop all tables from f1_presentation:
 
 # COMMAND ----------
 

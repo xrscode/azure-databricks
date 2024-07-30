@@ -4,24 +4,6 @@
 
 # COMMAND ----------
 
-# March 21st:
-results_file_1 = "/mnt/f1dl9072024/raw-increment/2021-03-21/results.json"
-# Create temp view so SQL can be performed.
-spark.read.json(results_file_1).createOrReplaceTempView("results_cutover")
-
-# March 28th (id: 1052):
-results_file_2 = "/mnt/f1dl9072024/raw-increment/2021-03-28/results.json"
-# Create temp view so SQL can be performed
-spark.read.json(results_file_2).createOrReplaceTempView("results_w1")
-
-
-# April 18th (id: 1053):
-results_file_3 = "/mnt/f1dl9072024/raw-increment/2021-04-18/results.json"
-# Create temp view so SQL can be performed
-spark.read.json(results_file_3).createOrReplaceTempView("results_w2")
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC **Create Widget for Data Source**
 # MAGIC
@@ -163,15 +145,6 @@ except Exception as e:
         if dbutils.fs.ls(processed_races):
             dbutils.fs.rm(processed_races, True)
         final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.races")
+        print("Races table successfully created.")
     except Exception as e:
         print(f"Exception occured: {e}")
-
-
-# COMMAND ----------
-
-display(spark.read.parquet(processed_races))
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC SELECT * FROM f1_processed.races;

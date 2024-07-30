@@ -12,8 +12,14 @@ def add_ingestion_date(input_df):
     output_df = input_df.withColumn("ingestion_date", current_timestamp())
     return output_df
 
+def set_partition(partition_by, dataframe):
+    df_list = dataframe.schema.names
+    df_list.remove(partition_by)
+    df_list.append(partition_by)
+    output_df = dataframe.select(df_list)
+    return output_df
 
-def overwrite_partition(db, table, column, df):
+def overwrite_partition(df, db, table, part):
     """
     Overwrites the specified partition in a Spark SQL table. If the table does not exist,
     creates a new partitioned table.
@@ -28,26 +34,38 @@ def overwrite_partition(db, table, column, df):
     None
     """
     table_full_name = f"{db}.{table}"
+
+    output_df = set_partition(part, df)
     
-    if spark._jsparkSession.catalog().tableExists(table_full_name):
-        try:
-            df.write.mode("overwrite").insertInto(table_full_name)
-            print(f"Successfully inserted into existing table: {table_full_name}")
-        except Exception as e:
-            print(f"Failed to insert into existing table: {table_full_name}. Error: {e}")
-            return e
+    try:
+        print('Setting spark config...')
+        partition_overwrite_mode_set = spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+        partition_overwrite_mode_get = spark.conf.get("spark.sql.sources.partitionOverwriteMode")
+    except Exception as e:
+        return f"Error! Message: {e}"
+
+
+    if partition_overwrite_mode_get == 'dynamic':
+        if spark._jsparkSession.catalog().tableExists(table_full_name):
+            # If table exist try...
+            try:
+                # Writing...
+                output_df.write.mode("overwrite").insertInto(table_full_name)
+                print(f"Successfully inserted into existing table: {table_full_name}")
+            except Exception as e:
+                print(f"Failed to insert into existing table: {table_full_name}. Error: {e}")
+                return e
+        else:
+            try:
+                # Creating...
+                output_df.write.mode("overwrite").partitionBy(part).format("parquet").saveAsTable(table_full_name)
+                print(f"Successfully created and inserted into new partitioned table: {table_full_name}")
+            except Exception as e:
+                print(f"Failed to create or insert into new partitioned table: {table_full_name}. Error: {e}")
+                return e
     else:
-        try:
-            df.write.mode("overwrite").partitionBy(column).format("parquet").saveAsTable(table_full_name)
-            print(f"Successfully created and inserted into new partitioned table: {table_full_name}")
-        except Exception as e:
-            print(f"Failed to create or insert into new partitioned table: {table_full_name}. Error: {e}")
-            return e
+        print('Could not set to dynamic config.')
         
 
-def set_partition(partition_by, dataframe):
-    df_list = dataframe.schema.names
-    df_list.remove(partition_by)
-    df_list.append(partition_by)
-    return df_list
+
 

@@ -1,16 +1,32 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest pitstops.json**
+# MAGIC **Ingest Increment Pitstops**
 
 # COMMAND ----------
 
-dbutils.widgets.help()
+# MAGIC %md
+# MAGIC **Create Widget for Data Source**
+# MAGIC
 
 # COMMAND ----------
 
-# Create Widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Widget for File Date**
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Load config and common functions**
 
 # COMMAND ----------
 
@@ -23,27 +39,30 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Establish file paths:**
+# MAGIC **Establish File Paths:**
 # MAGIC
 
 # COMMAND ----------
 
 import json
-# List files in the expected directory
-files = dbutils.fs.ls("/mnt")
-
 # Set File Location
 file_path = "/dbfs/mnt/mount_dict.json"
 with open(file_path, "r") as f:
     mount_dict = json.load(f)  
 
-processed_pitstops = f"{mount_dict['processed']}/pit_stops"
-raw_pitstops = f"{mount_dict['raw']}/pit_stops.json"
+# Read:
+raw_increment_pit_stops = f"{mount_dict['raw_increment']}/{v_file_date}/pit_stops.json"
 
-print(processed_pitstops, raw_pitstops)
+# Write:
+processed_pitstops = f"{mount_dict['processed']}/pit_stops"
+
+dbs = "f1_processed"
+tbl = "pit_stops"
+clm = "race_id"  
 
 # COMMAND ----------
 
+# MAGIC
 # MAGIC %md
 # MAGIC **Define Schema**
 
@@ -70,7 +89,7 @@ StructField("milliseconds", IntegerType(), True)
 pit_stops_df = spark.read \
 .schema(pit_schema) \
 .option("multiLine", True) \
-.json(raw_pitstops)
+.json(raw_increment_pit_stops)
 
 
 # COMMAND ----------
@@ -95,20 +114,8 @@ final_df = pit_stops_df \
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(processed_pitstops)
+overwrite_partition(final_df, dbs, tbl, clm)
 
-# COMMAND ----------
-
-try: 
-    final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.pit_stops")
-except Exception as e:
-    print(f"Exception occurred: {e}")
-    try:
-        if dbutils.fs.ls(processed_pitstops):
-            dbutils.fs.rm(processed_pitstops, True)
-        final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.pit_stops")
-    except Exception as e:
-        print(f"Exception occured: {e}")
 
 # COMMAND ----------
 
@@ -123,13 +130,3 @@ display(spark.read.parquet(processed_pitstops))
 
 # MAGIC %md
 # MAGIC
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Create Exit Command**\
-# MAGIC If notebook succeeds output is; "Success"
-
-# COMMAND ----------
-
-dbutils.notebook.exit("Success")

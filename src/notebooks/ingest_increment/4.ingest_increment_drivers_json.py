@@ -1,16 +1,50 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest drivers.json**
+# MAGIC **Ingest Increment Drivers**
 
 # COMMAND ----------
 
-dbutils.widgets.help()
+# March 21st:
+results_file_1 = "/mnt/f1dl9072024/raw-increment/2021-03-21/results.json"
+# Create temp view so SQL can be performed.
+spark.read.json(results_file_1).createOrReplaceTempView("results_cutover")
+
+# March 28th (id: 1052):
+results_file_2 = "/mnt/f1dl9072024/raw-increment/2021-03-28/results.json"
+# Create temp view so SQL can be performed
+spark.read.json(results_file_2).createOrReplaceTempView("results_w1")
+
+
+# April 18th (id: 1053):
+results_file_3 = "/mnt/f1dl9072024/raw-increment/2021-04-18/results.json"
+# Create temp view so SQL can be performed
+spark.read.json(results_file_3).createOrReplaceTempView("results_w2")
 
 # COMMAND ----------
 
-# Create Widget
+# MAGIC %md
+# MAGIC **Create Widget for Data Source**
+# MAGIC
+
+# COMMAND ----------
+
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Widget for File Date**
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Load config and common functions**
 
 # COMMAND ----------
 
@@ -29,18 +63,20 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 import json
-# List files in the expected directory
-files = dbutils.fs.ls("/mnt")
-
 # Set File Location
 file_path = "/dbfs/mnt/mount_dict.json"
 with open(file_path, "r") as f:
     mount_dict = json.load(f)  
 
-processed_drivers = f"{mount_dict['processed']}/drivers"
-raw_drivers = f"{mount_dict['raw']}/drivers.json"
+# Read:
+raw_increment_drivers = f"{mount_dict['raw_increment']}/{v_file_date}/drivers.json"
 
-print(processed_drivers, raw_drivers)
+# Write:
+processed_drivers = f"{mount_dict['processed']}/drivers"
+
+dbs = "f1_processed"
+tbl = "races"
+clm = "race_id"  
 
 # COMMAND ----------
 
@@ -69,8 +105,8 @@ drivers_schema = StructType(fields=[
 
 drivers_df = spark.read \
     .schema(drivers_schema) \
-    .json(raw_drivers)
-display(drivers_df)
+    .json(raw_increment_drivers)
+
 
 # COMMAND ----------
 
@@ -94,8 +130,7 @@ drivers_with_columns_df = drivers_df.withColumnRenamed("driverId", "driver_id") 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Drop the Unwanted Columns**
-# MAGIC 1. url
+# MAGIC **Drop URL**
 
 # COMMAND ----------
 
@@ -122,16 +157,6 @@ except Exception as e:
         if dbutils.fs.ls(processed_drivers):
             dbutils.fs.rm(processed_drivers, True)
         final_df.write.mode("overwrite").format("parquet").saveAsTable(f"f1_processed.drivers")
-        print(f"Processed drivers created succesfully.")
+        print("Drivers table successfully created.")
     except Exception as e:
         print(f"Exception occured: {e}")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Create Exit Command**\
-# MAGIC If notebook succeeds output is; "Success"
-
-# COMMAND ----------
-
-dbutils.notebook.exit("Success")

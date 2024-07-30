@@ -1,16 +1,32 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest qualifying.json**
+# MAGIC **Ingest Increment Qualifying**
 
 # COMMAND ----------
 
-dbutils.widgets.help()
+# MAGIC %md
+# MAGIC **Create Widget for Data Source**
+# MAGIC
 
 # COMMAND ----------
 
-# Create Widget
 dbutils.widgets.text("p_data_source", "")
 v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Create Widget for File Date**
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date", "2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Load config and common functions**
 
 # COMMAND ----------
 
@@ -23,24 +39,24 @@ v_data_source = dbutils.widgets.get("p_data_source")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Establish paths:**
+# MAGIC **Establish File Paths:**
 # MAGIC
 
 # COMMAND ----------
 
 import json
-# List files in the expected directory
-files = dbutils.fs.ls("/mnt")
-
 # Set File Location
 file_path = "/dbfs/mnt/mount_dict.json"
 with open(file_path, "r") as f:
     mount_dict = json.load(f)  
 
-processed_qualifying = f"{mount_dict['processed']}/qualifying"
-raw_qualifying = f"{mount_dict['raw']}/qualifying"
+# Read:
+raw_increment_qualifying = f"{mount_dict['raw_increment']}/{v_file_date}/qualifying"
 
-print(processed_qualifying, raw_qualifying)
+dbs = "f1_processed"
+tbl = "qualifying"
+clm = "race_id"  
+
 
 # COMMAND ----------
 
@@ -70,7 +86,7 @@ qualifying_schema = StructType(fields=[
 
 # COMMAND ----------
 
-qualifying_df = spark.read.schema(qualifying_schema).option('multiLine', True).json(raw_qualifying)
+qualifying_df = spark.read.schema(qualifying_schema).option('multiLine', True).json(raw_increment_qualifying)
 
 # COMMAND ----------
 
@@ -90,36 +106,4 @@ final_df = qualifying_df.withColumnRenamed("qualifyId", "qualifying_id").withCol
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").parquet(processed_qualifying)
-
-# COMMAND ----------
-
-try: 
-    final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.qualifying")
-except Exception as e:
-    print(f"Exception occurred: {e}")
-    try:
-        if dbutils.fs.ls(processed_qualifying):
-            dbutils.fs.rm(processed_qualifying, True)
-        final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.qualifying")
-    except Exception as e:
-        print(f"Exception occured: {e}")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Check Parquet**
-
-# COMMAND ----------
-
-display(spark.read.parquet(processed_qualifying))
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC **Create Exit Command**\
-# MAGIC If notebook succeeds output is; "Success"
-
-# COMMAND ----------
-
-dbutils.notebook.exit("Success")
+overwrite_partition(final_df, dbs, tbl, clm)

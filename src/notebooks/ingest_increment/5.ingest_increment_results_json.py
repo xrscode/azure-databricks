@@ -104,7 +104,6 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType, 
 
 results_df = spark.read.json(f"{raw_results}/{v_file_date}/results.json", schema=races_schema)
 
-display(results_df)
 
 
 # COMMAND ----------
@@ -183,27 +182,7 @@ final_df = df_rename.withColumn("ingestion_date", current_timestamp()).withColum
 
 # COMMAND ----------
 
-partition_list = set_partition(clm, final_df)
-
-select_final_df = final_df.select(partition_list)
-
-# COMMAND ----------
-
-partition_overwrite_mode_set = spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
-partition_overwrite_mode_get = spark.conf.get("spark.sql.sources.partitionOverwriteMode")
-
-# COMMAND ----------
-
-print(partition_overwrite_mode_get)
-
-# COMMAND ----------
-
-display(select_final_df)
-
-# COMMAND ----------
-
-write = overwrite_partition(dbs, tbl, clm, select_final_df)
-display(write)
+overwrite_partition(final_df, dbs, tbl, clm)
 
 # COMMAND ----------
 
@@ -221,13 +200,3 @@ display(spark.read.parquet(processed_results))
 # MAGIC FROM f1_processed.results
 # MAGIC GROUP BY race_id
 # MAGIC ORDER BY race_id DESC;
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC -- DROP TABLE IF EXISTS f1_processed.results;
-
-# COMMAND ----------
-
-exists = spark._jsparkSession.catalog().tableExists(f"{tbl}.{clm}")
-print(exists)
