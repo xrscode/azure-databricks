@@ -58,7 +58,7 @@ results_df.write.format("delta").mode("overwrite").save(f"{write_demo}/results_e
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE TABLE f1_demo.results_external
+# MAGIC CREATE TABLE IF NOT EXISTS f1_demo.results_external
 # MAGIC USING DELTA
 # MAGIC LOCATION "/mnt/f1dl9072024/demo/results_external"
 
