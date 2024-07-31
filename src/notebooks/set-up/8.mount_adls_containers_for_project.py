@@ -52,9 +52,7 @@ def mount_adls(storage_account_name, container_name):
 # MAGIC **Mount Raw / Processed / Presentation Container**
 
 # COMMAND ----------
-
-
-mount_dict = {"raw": mount_adls(storage_account, "raw"), "presentation": mount_adls(storage_account, "presentation"), "processed": mount_adls(storage_account, "processed"), "raw_increment": mount_adls(storage_account, "raw-increment")}
+mount_dict = {"raw": mount_adls(storage_account, "raw"), "presentation": mount_adls(storage_account, "presentation"), "processed": mount_adls(storage_account, "processed"), "raw_increment": mount_adls(storage_account, "raw-increment"), "demo": mount_adls(storage_account, "demo")}
 
 # COMMAND ----------
 
