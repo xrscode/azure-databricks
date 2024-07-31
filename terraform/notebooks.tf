@@ -38,10 +38,10 @@ resource "databricks_directory" "utils" {
 resource "databricks_directory" "includes_path" {
     path = "${databricks_directory.formula1.path}/includes"
 }
-
-
-
-
+# Create folder transformation_increment:
+resource "databricks_directory" "transformation_increment" {
+    path = "${databricks_directory.formula1.path}/transformation_increment"
+}
 
 
 
@@ -397,6 +397,12 @@ resource "databricks_notebook" "sql_basics_Demo" {
   path           = "${databricks_directory.demo.path}/14.sql_basics_demo"
   language       = "SQL"  # Set the appropriate language
 }
+# Upload notebook; 'delta_lake_demo'
+resource "databricks_notebook" "delta_lake_demo" {
+  content_base64 = filebase64("../src/notebooks/demo/15.delta_lake_demo.py")
+  path           = "${databricks_directory.demo.path}/15.delta_lake_demo"
+  language       = "PYTHON"  # Set the appropriate language
+}
 
 
 
@@ -438,6 +444,43 @@ resource "databricks_notebook" "run_transformations" {
   path           = "${databricks_directory.transformation.path}/0.run_transformations"
   language       = "PYTHON"  # Set the appropriate language
 }
+
+
+
+
+
+
+
+
+# TRANSFORMATION INCREMENT
+resource "databricks_notebook" "transformation_increment_run_transformations" {
+  content_base64 = filebase64("../src/notebooks/transformation_increment/0.run_increment_transformations.py")
+  path           = "${databricks_directory.transformation.path}/0.run_increment_transformations"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "transformation_increment_race_results" {
+  content_base64 = filebase64("../src/notebooks/transformation_increment/1.race_increment_results.py")
+  path           = "${databricks_directory.transformation.path}/1.race_increment_results"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "transformation_increment_driver_standings" {
+  content_base64 = filebase64("../src/notebooks/transformation_increment/2.driver_increment_standings.py")
+  path           = "${databricks_directory.transformation.path}/2.driver_increment_standings"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "transformation_increment_constructor_standings" {
+  content_base64 = filebase64("../src/notebooks/transformation_increment/3.constructor_increment_standings.py")
+  path           = "${databricks_directory.transformation.path}/3.constructor_increment_standings"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "transformation_increment_calculated_results" {
+  content_base64 = filebase64("../src/notebooks/transformation_increment/4.calculated_increment_race_results.sql")
+  path           = "${databricks_directory.transformation.path}/4.calculated_increment_race_results"
+  language       = "SQL"  # Set the appropriate language
+}
+
+
+
 
 
 
