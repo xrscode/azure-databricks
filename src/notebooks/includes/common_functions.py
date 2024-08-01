@@ -66,6 +66,66 @@ def overwrite_partition(df, db, table, part):
     else:
         print('Could not set to dynamic config.')
 
+
+def merge_delta_data(df, db, table, path, merge_condition, partition_column):
+    from delta.tables import DeltaTable
+    from pyspark.sql import SparkSession
+
+    spark = SparkSession.builder.getOrCreate()
+    spark.conf.set("spark.databricks.optimizer.dynamicPartitionPruning", "true")
+
+    """
+    Overwrites the specified partition in a Spark SQL table. If the table does not exist,
+    creates a new partitioned table.
+    
+    Parameters:
+    df (DataFrame): The Spark DataFrame to write.
+    db (str): The name of the database.
+    table (str): The name of the table.
+    path (str): The path where the Delta table is stored.
+    merge_condition (str): The condition on which to merge the data.
+    partition_column (str): The column to partition by.
+    
+    Returns:
+    None
+    """
+    
+    table_full_name = f"{db}.{table}"
+
+    try:
+        print('Setting spark config...')
+        spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+        partition_overwrite_mode_get = spark.conf.get("spark.sql.sources.partitionOverwriteMode")
+    except Exception as e:
+        return f"Error setting Spark config: {e}"
+
+    if partition_overwrite_mode_get == 'dynamic':
+        print('Spark config successfully set.')
+        if spark._jsparkSession.catalog().tableExists(table_full_name):
+            # If the table exists, perform merge
+            try:
+                delta_table = DeltaTable.forPath(spark, path)
+                print(f"Delta table: {delta_table}")
+                delta_table.alias("tgt").merge(
+                    df.alias("src"),
+                    merge_condition
+                ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+                print(f"Successfully merged data into {table_full_name}")
+            except Exception as e:
+                print(f"Failed to merge into existing table {table_full_name}. Error: {e}")
+                return e
+        else:
+            # If the table does not exist, create it
+            try:
+                df.write.mode("overwrite").partitionBy(partition_column).format("delta").saveAsTable(table_full_name)
+                print(f"Successfully created and inserted data into new table {table_full_name}")
+            except Exception as e:
+                print(f"Failed to create or insert into new partitioned table {table_full_name}. Error: {e}")
+                return e
+    else:
+        print('Could not set partitionOverwriteMode to dynamic.')
+        return 'Failed to set Spark config.'
+
     
 def df_column_to_list(input_df, column_name):
     df_row_list = input_df.select(column_name) \

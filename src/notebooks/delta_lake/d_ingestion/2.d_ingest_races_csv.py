@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC **Ingest Increment Races**
+# MAGIC **Delta Ingest Races**
 
 # COMMAND ----------
 
@@ -128,23 +128,18 @@ final_df = races_with_timestamp_df.select(
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Write to DataLake as Parquet**
+# MAGIC **Create DELTA**
 # MAGIC
 
 # COMMAND ----------
-
-final_df.write.mode("overwrite").partitionBy('race_year').parquet(processed_races)
-
-# COMMAND ----------
-
 try: 
-    final_df.write.mode("overwrite").partitionBy('race_year').format("parquet").saveAsTable("f1_processed.races")
+    final_df.write.mode("overwrite").partitionBy('race_year').format("delta").saveAsTable("f1_processed.races")
 except Exception as e:
     print(f"Exception occurred: {e}")
     try:
         if dbutils.fs.ls(processed_races):
             dbutils.fs.rm(processed_races, True)
-        final_df.write.mode("overwrite").partitionBy('race_year').format("parquet").saveAsTable("f1_processed.races")
+        final_df.write.mode("overwrite").partitionBy('race_year').format("delta").saveAsTable("f1_processed.races")
         print("Races table successfully created.")
     except Exception as e:
         print(f"Exception occured: {e}")

@@ -42,7 +42,14 @@ resource "databricks_directory" "includes_path" {
 resource "databricks_directory" "transformation_increment" {
     path = "${databricks_directory.formula1.path}/transformation_increment"
 }
-
+# Create folder delta_ingest:
+resource "databricks_directory" "delta_ingest" {
+    path = "${databricks_directory.formula1.path}/delta_ingest"
+}
+# Create folder delta_ingest:
+resource "databricks_directory" "delta_transform" {
+    path = "${databricks_directory.formula1.path}/delta_transform"
+}
 
 
 
@@ -304,6 +311,93 @@ resource "databricks_notebook" "common_functions" {
 
 
 
+# SETUP DELTA INGEST:
+resource "databricks_notebook" "delta_all_files" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/0.d_ingest_all_files.py")
+  path           = "${databricks_directory.delta_ingest.path}/0.d_ingest_all_files"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_circuits" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/1.d_ingest_circuits_csv.py")
+  path           = "${databricks_directory.delta_ingest.path}/1.d_ingest_circuits_csv"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_races" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/2.d_ingest_races_csv.py")
+  path           = "${databricks_directory.delta_ingest.path}/2.d_ingest_races_csv"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_constructors" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/3.d_ingest_constructors_json.py")
+  path           = "${databricks_directory.delta_ingest.path}/3.d_ingest_constructors_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_drivers_json" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/4.d_ingest_drivers_json.py")
+  path           = "${databricks_directory.delta_ingest.path}/4.d_ingest_drivers_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_results" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/5.d_ingest_results_json.py")
+  path           = "${databricks_directory.delta_ingest.path}/5.d_ingest_results_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_pitstops" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/6.d_ingest_pitstops_json.py")
+  path           = "${databricks_directory.delta_ingest.path}/6.d_ingest_pitstops_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_lap_times" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/7.d_ingest_lap_times_csv.py")
+  path           = "${databricks_directory.delta_ingest.path}/7.d_ingest_lap_times_csv"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_qualifying" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/8.d_ingest_qualifying_json.py")
+  path           = "${databricks_directory.delta_ingest.path}/8.d_ingest_qualifying_json"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_ingest_processed_database" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_ingestion/9.d_create_processed_database.sql")
+  path           = "${databricks_directory.delta_ingest.path}/9.d_create_processed_database"
+  language       = "SQL"  # Set the appropriate language
+}
+
+resource "databricks_notebook" "delta_transform_run_transformations" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_transform/0.d_run_transformations.py")
+  path           = "${databricks_directory.delta_transform.path}/0.d_run_transformations"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_transform_race_results" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_transform/1.d_transform_race_results.py")
+  path           = "${databricks_directory.delta_transform.path}/1.d_transform_race_results"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_transform_driver_standings" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_transform/2.d_transform_driver_standings.py")
+  path           = "${databricks_directory.delta_transform.path}/2.d_transform_driver_standings"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_transform_constructor_standings" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_transform/3.d_transform_constructor_standings.py")
+  path           = "${databricks_directory.delta_transform.path}/3.d_transform_constructor_standings"
+  language       = "PYTHON"  # Set the appropriate language
+}
+resource "databricks_notebook" "delta_transform_calculated_race_results" {
+  content_base64 = filebase64("../src/notebooks/delta_lake/d_transform/4.d_transform_calculated_race_results.py")
+  path           = "${databricks_directory.delta_transform.path}/4.d_transform_calculated_race_results"
+  language       = "PYTHON"  # Set the appropriate language
+}
+
+
+
+
+
+
+
+
+
+
 
 
 # DEMO
@@ -455,27 +549,27 @@ resource "databricks_notebook" "run_transformations" {
 # TRANSFORMATION INCREMENT
 resource "databricks_notebook" "transformation_increment_run_transformations" {
   content_base64 = filebase64("../src/notebooks/transformation_increment/0.run_increment_transformations.py")
-  path           = "${databricks_directory.transformation.path}/0.run_increment_transformations"
+  path           = "${databricks_directory.transformation_increment.path}/0.run_increment_transformations"
   language       = "PYTHON"  # Set the appropriate language
 }
 resource "databricks_notebook" "transformation_increment_race_results" {
   content_base64 = filebase64("../src/notebooks/transformation_increment/1.race_increment_results.py")
-  path           = "${databricks_directory.transformation.path}/1.race_increment_results"
+  path           = "${databricks_directory.transformation_increment.path}/1.race_increment_results"
   language       = "PYTHON"  # Set the appropriate language
 }
 resource "databricks_notebook" "transformation_increment_driver_standings" {
   content_base64 = filebase64("../src/notebooks/transformation_increment/2.driver_increment_standings.py")
-  path           = "${databricks_directory.transformation.path}/2.driver_increment_standings"
+  path           = "${databricks_directory.transformation_increment.path}/2.driver_increment_standings"
   language       = "PYTHON"  # Set the appropriate language
 }
 resource "databricks_notebook" "transformation_increment_constructor_standings" {
   content_base64 = filebase64("../src/notebooks/transformation_increment/3.constructor_increment_standings.py")
-  path           = "${databricks_directory.transformation.path}/3.constructor_increment_standings"
+  path           = "${databricks_directory.transformation_increment.path}/3.constructor_increment_standings"
   language       = "PYTHON"  # Set the appropriate language
 }
 resource "databricks_notebook" "transformation_increment_calculated_results" {
   content_base64 = filebase64("../src/notebooks/transformation_increment/4.calculated_increment_race_results.sql")
-  path           = "${databricks_directory.transformation.path}/4.calculated_increment_race_results"
+  path           = "${databricks_directory.transformation_increment.path}/4.calculated_increment_race_results"
   language       = "SQL"  # Set the appropriate language
 }
 
